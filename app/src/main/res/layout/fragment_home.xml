@@ -84,28 +84,10 @@
             android:layout_height="match_parent">
 
             <ImageView
-                android:id="@+id/imageButton"
+                android:id="@+id/imageButton7"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />
-
-            <ImageView
-                android:id="@+id/imageButton2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@android:drawable/checkbox_off_background" />
-
-            <ImageView
-                android:id="@+id/imageButton3"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@android:drawable/checkbox_off_background" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
             <ImageView
                 android:id="@+id/imageButton8"
@@ -119,8 +101,26 @@
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />
 
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
             <ImageView
-                android:id="@+id/imageButton10"
+                android:id="@+id/imageButton6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/checkbox_off_background" />
+
+            <ImageView
+                android:id="@+id/imageButton5"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@android:drawable/checkbox_off_background" />
+
+            <ImageView
+                android:id="@+id/imageButton4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />
@@ -132,19 +132,19 @@
             android:layout_height="match_parent">
 
             <ImageView
-                android:id="@+id/imageButton14"
+                android:id="@+id/imageButton1"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />
 
             <ImageView
-                android:id="@+id/imageButton15"
+                android:id="@+id/imageButton2"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />
 
             <ImageView
-                android:id="@+id/imageButton16"
+                android:id="@+id/imageButton3"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@android:drawable/checkbox_off_background" />

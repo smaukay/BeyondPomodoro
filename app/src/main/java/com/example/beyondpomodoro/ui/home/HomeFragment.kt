@@ -10,12 +10,10 @@ import android.provider.CalendarContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -25,6 +23,7 @@ import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import java.util.*
+import kotlin.math.ceil
 
 class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
     private val caller: HomeFragment = caller
@@ -81,6 +80,8 @@ class SetTimeDialogFragment(caller: HomeFragment): DialogFragment() {
 
 class HomeFragment : Fragment() {
 
+    private var numBlocksShow: UInt = 9u
+    private var imageButtonList: List<ImageView?>? = null
     private var sessionTimeSecondsLeft: UInt = 30u
     private var sessionTimeSeconds: UInt = 30u
     private var editTags: EditText? = null
@@ -160,6 +161,9 @@ class HomeFragment : Fragment() {
         this.pomodoroComplete = false
         this.pomodoroActive = false
 
+        // show all visual image blocks
+        showAllVisualBlocks()
+
     }
 
     override fun onCreateView(
@@ -180,8 +184,10 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val cls = this
 
-        this.editTags = view.findViewById<EditText>(R.id.editTextTags)
-        this.editTags?.setOnEditorActionListener { v, actionId, event ->
+        setupVisualBlocks(view)
+
+        editTags = view.findViewById<EditText>(R.id.editTextTags)
+        editTags?.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
                     // add a new chip to the group
@@ -212,7 +218,7 @@ class HomeFragment : Fragment() {
             }
         }
 
-        this.textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
+        textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
             text = convertMinutesToDisplayString()
 
             // onclick open dialog to enter time
@@ -236,13 +242,15 @@ class HomeFragment : Fragment() {
 
             }
         }
-        this.endButton = view.findViewById<Button>(R.id.button4).apply {
+
+        endButton = view.findViewById<Button>(R.id.button4).apply {
             this.setOnClickListener {
                 // Confirm if session to be saved?
                 EndSessionDialogFragment(cls).show(parentFragmentManager, "end_session")
             }
         }
-        this.button = view.findViewById<Button>(R.id.button).apply {
+
+        button = view.findViewById<Button>(R.id.button).apply {
             val but = this
             this.setOnClickListener {
                 if (cls.pomodoroActive) {
@@ -270,8 +278,41 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun changeTime() {
-        TODO("Not yet implemented")
+    fun setupVisualBlocks(view: View) {
+        // create array of buttons
+        // TODO: setup colour themes etc if needed
+        val imageButtonIds = arrayOf(
+            R.id.imageButton1,
+            R.id.imageButton2,
+            R.id.imageButton3,
+            R.id.imageButton4,
+            R.id.imageButton5,
+            R.id.imageButton6,
+            R.id.imageButton7,
+            R.id.imageButton8,
+            R.id.imageButton9,
+        )
+
+        imageButtonList = imageButtonIds.map {
+            view.findViewById<ImageView>(it)
+        }
+
+        println("DEBUG: Found $imageButtonList.size visual blocks")
+    }
+
+    fun showAllVisualBlocks() {
+        // when user ends session, set all visual blocks back to active
+        imageButtonList?.forEach {
+            it?.visibility = VISIBLE
+        }
+    }
+
+    fun disappearVisualBlockAt(idx: Int) {
+        imageButtonList?.let { list ->
+            list[idx]?.let {
+                it.visibility = VISIBLE
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -282,11 +323,26 @@ class HomeFragment : Fragment() {
     private fun countDownTimerCreate(textSeconds: TextView, cls: HomeFragment, millisLeft: Long, but: Button) : CountDownTimer {
         return object: CountDownTimer(millisLeft, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                cls.sessionTimeSecondsLeft = cls.sessionTimeSecondsLeft - 1u
+                cls.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
                 textSeconds.text = convertMinutesToDisplayString()
+
+                // check if any visualblocks to be disappeared?
+                val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (cls.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
+                println("numblocks: $numBlocksShow")
+                if(cls.numBlocksShow != numBlocksShow) {
+                    // number of blocks to show changed
+                    cls.imageButtonList?.let {
+                        it.subList(numBlocksShow.toInt(), 9).forEach {
+                            it?.visibility = INVISIBLE
+                        }
+                        cls.numBlocksShow = numBlocksShow
+                    }
+                }
             }
 
             override fun onFinish() {
+                cls.hideAllVisualBlocks()
+
                 val toast = Toast.makeText(
                     view?.context,
                     cls.getString(R.string.pomodoro_toast_session_complete),
@@ -298,6 +354,13 @@ class HomeFragment : Fragment() {
                 cls.pomodoroActive = false
             }
         }
+    }
+
+    private fun hideAllVisualBlocks() {
+        imageButtonList?.forEach {
+            it?.visibility = INVISIBLE
+        }
+
     }
 
     fun setSessionTime(s: UInt) {
