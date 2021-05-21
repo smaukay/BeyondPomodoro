@@ -17,6 +17,7 @@ import android.widget.*
 import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
@@ -164,6 +165,12 @@ class HomeFragment : Fragment() {
         // show all visual image blocks
         showAllVisualBlocks()
 
+        parentFragmentManager.commit {
+            add(R.id.home_layout, HomeFragment(), "break_time")
+            setReorderingAllowed(true)
+            addToBackStack("name") // name can be null
+        }
+
     }
 
     override fun onCreateView(
@@ -294,7 +301,7 @@ class HomeFragment : Fragment() {
         )
 
         imageButtonList = imageButtonIds.map {
-            view.findViewById<ImageView>(it)
+            view.findViewById(it)
         }
 
         println("DEBUG: Found $imageButtonList.size visual blocks")
