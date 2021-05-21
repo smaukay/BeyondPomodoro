@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_pomodoro"
+            android:icon="@android:drawable/ic_lock_idle_alarm"
+            android:title="@string/menu_pomodoro" />
+        <item
+            android:id="@+id/nav_analytics"
+            android:icon="@android:drawable/ic_menu_week"
+            android:title="@string/menu_analytics" />
+    </group>
+</menu>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_pomodoro">
+
+    <fragment
+        android:id="@+id/nav_pomodoro"
+        android:name="com.example.beyondpomodoro.ui.home.HomeFragment"
+        android:label="@string/menu_pomodoro"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_analytics"
+        android:name="com.example.beyondpomodoro.ui.analytics.AnalyticsFragment"
+        android:label="@string/menu_pomodoro"
+        tools:layout="@layout/fragment_analytics" />
+
+</navigation>
