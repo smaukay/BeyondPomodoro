@@ -17,8 +17,8 @@ import android.widget.*
 import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.google.android.material.chip.Chip
@@ -79,33 +79,17 @@ class SetTimeDialogFragment(caller: HomeFragment): DialogFragment() {
     }
 }
 
-class HomeFragment : Fragment() {
+open class HomeFragment : Fragment() {
 
-    private var numBlocksShow: UInt = 9u
-    private var imageButtonList: List<ImageView?>? = null
-    private var sessionTimeSecondsLeft: UInt = 30u
-    private var sessionTimeSeconds: UInt = 30u
-    private var editTags: EditText? = null
-    private var pomodoroComplete: Boolean = false
-    private var button: Button? = null
-    private var endButton: Button? = null
-    private var textViewSeconds: TextView? = null
-    private var countDownTimer: CountDownTimer? = null
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
 
-    // event variables
-    private var sessionStartTimeMillis: Long? = null
-    private var sessionEndTimeMillis: Long? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    // timer state
-    private var pomodoroActive = false
-
-    fun saveSession() {
+    open fun saveSession() {
         val toast = Toast.makeText(
             view?.context,
             "Session saved",
@@ -114,7 +98,7 @@ class HomeFragment : Fragment() {
         toast.show()
 
         // end time in millis
-        sessionEndTimeMillis = Calendar.getInstance().timeInMillis
+        homeViewModel.sessionEndTimeMillis = Calendar.getInstance().timeInMillis
 
         // create a calendar event description from tags added
         var descriptionSuggestion = view?.findViewById<ChipGroup>(R.id.chipGroup)?.children?.toList()?.map { c -> (c as Chip).text.toString() }?.reduceOrNull() { acc, c -> "$acc, $c" }
@@ -124,8 +108,8 @@ class HomeFragment : Fragment() {
         // create calendar intent
         val intent = Intent(Intent.ACTION_INSERT)
             .setData(CalendarContract.Events.CONTENT_URI)
-            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, sessionStartTimeMillis)
-            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, sessionEndTimeMillis)
+            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, homeViewModel.sessionStartTimeMillis)
+            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, homeViewModel.sessionEndTimeMillis)
             .putExtra(CalendarContract.Events.TITLE, "")
             .putExtra(CalendarContract.Events.DESCRIPTION, descriptionSuggestion)
             // .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
@@ -139,38 +123,41 @@ class HomeFragment : Fragment() {
     }
 
     fun convertMinutesToDisplayString() : String {
-        return (sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
+        return (homeViewModel.sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (homeViewModel.sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
     }
 
-    fun endSession() {
+    private fun clockReset() {
         // no save
         // reset the clock
-        countDownTimer?.cancel()
+        homeViewModel.countDownTimer?.cancel()
 
         // set timer back to full
-        sessionTimeSecondsLeft = sessionTimeSeconds
+        homeViewModel.sessionTimeSecondsLeft = homeViewModel.sessionTimeSeconds
         // set text back to timer
-        textViewSeconds?.text = convertMinutesToDisplayString()
+        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
+    }
+
+    private fun pomodoroReset() {
+        // set pomodoro completeness as false
+        homeViewModel.pomodoroComplete = false
+        homeViewModel.pomodoroActive = false
+    }
+
+    open fun endSession() {
+
+        clockReset()
+        pomodoroReset()
 
         // endbutton hide
-        this.endButton?.visibility = INVISIBLE
+        homeViewModel.endButton?.visibility = INVISIBLE
 
         // start button
-        this.button?.text = getString(R.string.pomodoro_start_session_button)
-
-        // set pomodoro completeness as false
-        this.pomodoroComplete = false
-        this.pomodoroActive = false
+        homeViewModel.button?.text = getString(R.string.pomodoro_start_session_button)
 
         // show all visual image blocks
         showAllVisualBlocks()
 
-        parentFragmentManager.commit {
-            add(R.id.home_layout, HomeFragment(), "break_time")
-            setReorderingAllowed(true)
-            addToBackStack("name") // name can be null
-        }
-
+        findNavController().navigate(R.id.action_nav_pomodoro_to_analyticsFragment)
     }
 
     override fun onCreateView(
@@ -192,31 +179,47 @@ class HomeFragment : Fragment() {
         val cls = this
 
         setupVisualBlocks(view)
+        homeViewModel.chipGroup = view.findViewById<ChipGroup>(R.id.chipGroup)
 
-        editTags = view.findViewById<EditText>(R.id.editTextTags)
-        editTags?.setOnEditorActionListener { v, actionId, event ->
+        // all existing tags
+        homeViewModel.tags.forEach {
+            val chip = Chip(this.requireContext())
+            chip.text = it.key
+            chip.setCloseIconVisible(true)
+            chip.setOnCloseIconClickListener {
+                // remove chip from chipgroup
+                homeViewModel.chipGroup?.removeView(chip)
+                homeViewModel.tags.remove(tag)
+            }
+            homeViewModel.chipGroup?.addView(chip)
+        }
+
+
+        homeViewModel.editTags = view.findViewById<EditText>(R.id.editTextTags)
+        homeViewModel.editTags?.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
                     // add a new chip to the group
-                    val tag = cls.editTags?.text.toString()
-                    val chipgroup = view.findViewById<ChipGroup>(R.id.chipGroup)
-                    when(chipgroup.children.toList().any { c -> ((c as Chip).text.toString()) == tag }) {
+                    val tag = homeViewModel.editTags?.text.toString()
+                    when(homeViewModel.chipGroup?.children?.toList()?.any { c -> ((c as Chip).text.toString()) == tag }) {
                         false -> {
                             val chip = Chip(this.requireContext())
                             chip.text = tag
                             chip.setCloseIconVisible(true)
                             chip.setOnCloseIconClickListener {
                                 // remove chip from chipgroup
-                                chipgroup.removeView(chip)
+                                homeViewModel.chipGroup?.removeView(chip)
+                                homeViewModel.tags.remove(tag)
                             }
-                            chipgroup.addView(chip)
+                            homeViewModel.chipGroup?.addView(chip)
+                            homeViewModel.tags.put(tag, tag)
                         }
                         else ->
                             {
                                 // TODO: highlight the chip if already present
                             }
                     }
-                    cls.editTags?.setText("")
+                    homeViewModel.editTags?.setText("")
                     true
                 }
                 else -> {
@@ -225,12 +228,12 @@ class HomeFragment : Fragment() {
             }
         }
 
-        textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
+        homeViewModel.textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
             text = convertMinutesToDisplayString()
 
             // onclick open dialog to enter time
             setOnClickListener {
-                when(cls.pomodoroActive and !cls.pomodoroComplete) {
+                when(cls.homeViewModel.pomodoroActive and !cls.homeViewModel.pomodoroComplete) {
                     true ->
                         {
                             //TODO: send toast saying time cannot be changed
@@ -250,34 +253,33 @@ class HomeFragment : Fragment() {
             }
         }
 
-        endButton = view.findViewById<Button>(R.id.button4).apply {
+        homeViewModel.endButton = view.findViewById<Button>(R.id.button4).apply {
             this.setOnClickListener {
-                // Confirm if session to be saved?
-                EndSessionDialogFragment(cls).show(parentFragmentManager, "end_session")
+                confirmEndSession()
             }
         }
 
-        button = view.findViewById<Button>(R.id.button).apply {
+        homeViewModel.button = view.findViewById<Button>(R.id.button).apply {
             val but = this
             this.setOnClickListener {
-                if (cls.pomodoroActive) {
-                    cls.countDownTimer?.cancel()
-                    cls.pomodoroActive = false
+                if (cls.homeViewModel.pomodoroActive) {
+                    cls.homeViewModel.countDownTimer?.cancel()
+                    cls.homeViewModel.pomodoroActive = false
                     but.text = context.getString(R.string.pomodoro_resume_session_button)
                 }
-                else if ( (cls.pomodoroActive == false) and (cls.pomodoroComplete == false) ){
-                    cls.pomodoroActive = true
-                    cls.countDownTimer = cls.countDownTimerCreate(textViewSeconds!!, cls, (cls.sessionTimeSecondsLeft * 1000u).toLong(), but)
-                    cls.countDownTimer?.start()
-                    textViewSeconds!!.text = convertMinutesToDisplayString()
+                else if ( (cls.homeViewModel.pomodoroActive == false) and (cls.homeViewModel.pomodoroComplete == false) ){
+                    cls.homeViewModel.pomodoroActive = true
+                    cls.homeViewModel.countDownTimer = countDownTimerCreate(view, cls, (cls.homeViewModel.sessionTimeSecondsLeft * 1000u).toLong(), but)
+                    cls.homeViewModel.countDownTimer?.start()
+                    cls.homeViewModel.textViewSeconds!!.text = convertMinutesToDisplayString()
 
                     but.text = context.getString(R.string.pomodoro_pause_session_button)
-                    endButton?.visibility = View.VISIBLE
+                    homeViewModel.endButton?.visibility = View.VISIBLE
 
                     // save session start time
-                    cls.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
+                    cls.homeViewModel.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
                 }
-                else if (cls.pomodoroComplete) {
+                else if (cls.homeViewModel.pomodoroComplete) {
                     // this is now a save session button
                     cls.saveSession()
                 }
@@ -300,22 +302,22 @@ class HomeFragment : Fragment() {
             R.id.imageButton9,
         )
 
-        imageButtonList = imageButtonIds.map {
+        homeViewModel.imageButtonList = imageButtonIds.map {
             view.findViewById(it)
         }
 
-        println("DEBUG: Found $imageButtonList.size visual blocks")
+        println("DEBUG: Found $homeViewModel.imageButtonList.size visual blocks")
     }
 
     fun showAllVisualBlocks() {
         // when user ends session, set all visual blocks back to active
-        imageButtonList?.forEach {
+        homeViewModel.imageButtonList?.forEach {
             it?.visibility = VISIBLE
         }
     }
 
     fun disappearVisualBlockAt(idx: Int) {
-        imageButtonList?.let { list ->
+        homeViewModel.imageButtonList?.let { list ->
             list[idx]?.let {
                 it.visibility = VISIBLE
             }
@@ -327,53 +329,135 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
-    private fun countDownTimerCreate(textSeconds: TextView, cls: HomeFragment, millisLeft: Long, but: Button) : CountDownTimer {
-        return object: CountDownTimer(millisLeft, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                cls.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
-                textSeconds.text = convertMinutesToDisplayString()
+    open fun updateVisualBlocks(millisUntilFinished: Long) {
+        homeViewModel.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
+        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
 
-                // check if any visualblocks to be disappeared?
-                val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (cls.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
-                println("numblocks: $numBlocksShow")
-                if(cls.numBlocksShow != numBlocksShow) {
-                    // number of blocks to show changed
-                    cls.imageButtonList?.let {
-                        it.subList(numBlocksShow.toInt(), 9).forEach {
-                            it?.visibility = INVISIBLE
-                        }
-                        cls.numBlocksShow = numBlocksShow
-                    }
+        // check if any visualblocks to be disappeared?
+        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (homeViewModel.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
+        println("numblocks: $numBlocksShow")
+        if(homeViewModel.numBlocksShow != numBlocksShow) {
+            // number of blocks to show changed
+            homeViewModel.imageButtonList?.let {
+                it.subList(numBlocksShow.toInt(), 9).forEach {
+                    it?.visibility = INVISIBLE
                 }
-            }
-
-            override fun onFinish() {
-                cls.hideAllVisualBlocks()
-
-                val toast = Toast.makeText(
-                    view?.context,
-                    cls.getString(R.string.pomodoro_toast_session_complete),
-                    Toast.LENGTH_SHORT
-                )
-                toast.show()
-                but.text = getString(R.string.pomodoro_save_session_button)
-                cls.pomodoroComplete = true
-                cls.pomodoroActive = false
+                homeViewModel.numBlocksShow = numBlocksShow
             }
         }
     }
 
     private fun hideAllVisualBlocks() {
-        imageButtonList?.forEach {
+        homeViewModel.imageButtonList?.forEach {
             it?.visibility = INVISIBLE
         }
 
     }
 
     fun setSessionTime(s: UInt) {
-        sessionTimeSeconds = s
-        sessionTimeSecondsLeft = s
-        textViewSeconds?.text = convertMinutesToDisplayString()
+        homeViewModel.sessionTimeSeconds = s
+        homeViewModel.sessionTimeSecondsLeft = s
+        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
+    }
+
+    open fun onTimerFinish() {
+        hideAllVisualBlocks()
+
+        val toast = Toast.makeText(
+            view?.context,
+            getString(R.string.pomodoro_toast_session_complete),
+            Toast.LENGTH_SHORT
+        )
+        toast.show()
+        homeViewModel.button?.text = getString(R.string.pomodoro_save_session_button)
+        homeViewModel.pomodoroComplete = true
+        homeViewModel.pomodoroActive = false
+    }
+
+    open fun confirmEndSession() {
+        // Confirm if session to be saved?
+        EndSessionDialogFragment(this).show(parentFragmentManager, "end_session")
     }
 }
 
+class HomePomodoroBreakFragment: HomeFragment() {
+    private lateinit var breakViewModel: BreakViewModel
+    private var _binding: FragmentHomeBinding? = null
+
+
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onTimerFinish() {
+        val toast = Toast.makeText(
+            view?.context,
+            getString(R.string.pomodoro_toast_session_complete),
+            Toast.LENGTH_SHORT
+        )
+        toast.show()
+        breakViewModel.button?.text = getString(R.string.pomodoro_save_session_button)
+        breakViewModel.pomodoroComplete = true
+        breakViewModel.pomodoroActive = false
+
+        // hide end button
+        breakViewModel.endButton?.visibility = INVISIBLE
+    }
+
+    fun backToPomodoro () {
+        // TODO:
+        // replace the fragment with a HomeFragment
+
+    }
+
+    override fun saveSession() {
+        backToPomodoro()
+    }
+
+    override fun endSession() {
+        // endbutton hide if prematurely ended
+        breakViewModel.endButton?.visibility = INVISIBLE
+
+        // start button
+        breakViewModel.button?.text = getString(R.string.pomodoro_end_break_button)
+
+        backToPomodoro()
+    }
+
+    override fun confirmEndSession() {
+        // check if break should be ended?
+        // or just go ahead and end it anyway?
+        endSession()
+    }
+    override fun updateVisualBlocks(millisUntilFinished: Long) {
+        breakViewModel.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
+        breakViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
+    }
+}
+
+fun countDownTimerCreate(view: View, cls: HomeFragment, millisLeft: Long, but: Button) : CountDownTimer {
+    return object: CountDownTimer(millisLeft, 1000) {
+        override fun onTick(millisUntilFinished: Long) {
+            cls.updateVisualBlocks(millisUntilFinished)
+        }
+
+        override fun onFinish() {
+            cls.onTimerFinish()
+        }
+    }
+}
