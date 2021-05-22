@@ -1,5 +1,6 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.text.Editable
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.lifecycle.LiveData
@@ -9,6 +10,8 @@ import com.google.android.material.chip.ChipGroup
 
 open class HomeViewModel : ViewModel() {
 
+    var title: String = ""
+    var editTitle: EditText? = null
     private val _text = MutableLiveData<String>().apply {
         value = "This is home Fragment"
     }
