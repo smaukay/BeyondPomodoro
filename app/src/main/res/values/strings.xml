@@ -25,4 +25,5 @@
     <string name="dialog_change_time_ok">Set</string>
     <string name="dialog_session_time_ok">Set</string>
     <string name="pomodoro_end_break_button">Resume</string>
+    <string name="pomodoro_break_end_message">Back</string>
 </resources>

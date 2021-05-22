@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.provider.CalendarContract
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +15,9 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.core.view.children
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.example.beyondpomodoro.PomodoroTimer
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.google.android.material.chip.Chip
@@ -36,12 +35,12 @@ class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
                 .setPositiveButton(R.string.end_session_save,
                     DialogInterface.OnClickListener { dialog, id ->
                         // save session fragment
-                        this.caller.saveSession()
+                        caller.saveSession()
                     })
                 .setNegativeButton(R.string.end_session_nosave,
                     DialogInterface.OnClickListener { dialog, id ->
                         // no save :(
-                        this.caller.endSession()
+                        caller.endSession()
                     })
             // Create the AlertDialog object and return it
             builder.create()
@@ -49,8 +48,8 @@ class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
     }
 }
 
-class SetTimeDialogFragment(caller: HomeFragment): DialogFragment() {
-    private val caller: HomeFragment = caller
+class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
+    private val caller: TimerFragment = caller
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,17 +78,16 @@ class SetTimeDialogFragment(caller: HomeFragment): DialogFragment() {
     }
 }
 
-open class HomeFragment : Fragment() {
+open class HomeFragment : TimerFragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
+    lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
-
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    open fun saveSession() {
+    override fun saveSession() {
         val toast = Toast.makeText(
             view?.context,
             "Session saved",
@@ -119,45 +117,19 @@ open class HomeFragment : Fragment() {
 
 
         // after saving we end session anyway
-        this.endSession();
+        endSession();
     }
 
-    fun convertMinutesToDisplayString() : String {
-        return (homeViewModel.sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (homeViewModel.sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
-    }
+    override fun endSession() {
 
-    private fun clockReset() {
-        // no save
-        // reset the clock
-        homeViewModel.countDownTimer?.cancel()
-
-        // set timer back to full
-        homeViewModel.sessionTimeSecondsLeft = homeViewModel.sessionTimeSeconds
-        // set text back to timer
-        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
-    }
-
-    private fun pomodoroReset() {
-        // set pomodoro completeness as false
-        homeViewModel.pomodoroComplete = false
-        homeViewModel.pomodoroActive = false
-    }
-
-    open fun endSession() {
-
-        clockReset()
-        pomodoroReset()
-
-        // endbutton hide
-        homeViewModel.endButton?.visibility = INVISIBLE
-
-        // start button
-        homeViewModel.button?.text = getString(R.string.pomodoro_start_session_button)
+        timer.clockReset()
+        timer.pomodoroReset()
+        timer.buttonsReset()
 
         // show all visual image blocks
         showAllVisualBlocks()
 
-        findNavController().navigate(R.id.action_nav_pomodoro_to_analyticsFragment)
+        findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
     }
 
     override fun onCreateView(
@@ -228,63 +200,7 @@ open class HomeFragment : Fragment() {
             }
         }
 
-        homeViewModel.textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
-            text = convertMinutesToDisplayString()
-
-            // onclick open dialog to enter time
-            setOnClickListener {
-                when(cls.homeViewModel.pomodoroActive and !cls.homeViewModel.pomodoroComplete) {
-                    true ->
-                        {
-                            //TODO: send toast saying time cannot be changed
-                            val toast = Toast.makeText(
-                                view?.context,
-                                "The session is already active. You can end it if you like.",
-                                Toast.LENGTH_SHORT
-                            )
-                            toast.show()
-                        }
-                    false -> {
-                        SetTimeDialogFragment(cls).show(parentFragmentManager, "pick_session_time")
-                    }
-
-                }
-
-            }
-        }
-
-        homeViewModel.endButton = view.findViewById<Button>(R.id.button4).apply {
-            this.setOnClickListener {
-                confirmEndSession()
-            }
-        }
-
-        homeViewModel.button = view.findViewById<Button>(R.id.button).apply {
-            val but = this
-            this.setOnClickListener {
-                if (cls.homeViewModel.pomodoroActive) {
-                    cls.homeViewModel.countDownTimer?.cancel()
-                    cls.homeViewModel.pomodoroActive = false
-                    but.text = context.getString(R.string.pomodoro_resume_session_button)
-                }
-                else if ( (cls.homeViewModel.pomodoroActive == false) and (cls.homeViewModel.pomodoroComplete == false) ){
-                    cls.homeViewModel.pomodoroActive = true
-                    cls.homeViewModel.countDownTimer = countDownTimerCreate(view, cls, (cls.homeViewModel.sessionTimeSecondsLeft * 1000u).toLong(), but)
-                    cls.homeViewModel.countDownTimer?.start()
-                    cls.homeViewModel.textViewSeconds!!.text = convertMinutesToDisplayString()
-
-                    but.text = context.getString(R.string.pomodoro_pause_session_button)
-                    homeViewModel.endButton?.visibility = View.VISIBLE
-
-                    // save session start time
-                    cls.homeViewModel.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
-                }
-                else if (cls.homeViewModel.pomodoroComplete) {
-                    // this is now a save session button
-                    cls.saveSession()
-                }
-            }
-        }
+        timer = PomodoroTimer(30u, view,this)
     }
 
     fun setupVisualBlocks(view: View) {
@@ -316,25 +232,14 @@ open class HomeFragment : Fragment() {
         }
     }
 
-    fun disappearVisualBlockAt(idx: Int) {
-        homeViewModel.imageButtonList?.let { list ->
-            list[idx]?.let {
-                it.visibility = VISIBLE
-            }
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    open fun updateVisualBlocks(millisUntilFinished: Long) {
-        homeViewModel.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
-        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
-
+    override fun updateVisualBlocks(millisUntilFinished: Long) {
         // check if any visualblocks to be disappeared?
-        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (homeViewModel.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
+        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (timerViewModel.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
         println("numblocks: $numBlocksShow")
         if(homeViewModel.numBlocksShow != numBlocksShow) {
             // number of blocks to show changed
@@ -354,13 +259,11 @@ open class HomeFragment : Fragment() {
 
     }
 
-    fun setSessionTime(s: UInt) {
-        homeViewModel.sessionTimeSeconds = s
-        homeViewModel.sessionTimeSecondsLeft = s
-        homeViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
+    override fun startSession() {
+        homeViewModel.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
     }
 
-    open fun onTimerFinish() {
+    override fun onTimerFinish() {
         hideAllVisualBlocks()
 
         val toast = Toast.makeText(
@@ -369,95 +272,11 @@ open class HomeFragment : Fragment() {
             Toast.LENGTH_SHORT
         )
         toast.show()
-        homeViewModel.button?.text = getString(R.string.pomodoro_save_session_button)
-        homeViewModel.pomodoroComplete = true
-        homeViewModel.pomodoroActive = false
     }
 
-    open fun confirmEndSession() {
+    override fun confirmEndSession() {
         // Confirm if session to be saved?
         EndSessionDialogFragment(this).show(parentFragmentManager, "end_session")
     }
 }
 
-class HomePomodoroBreakFragment: HomeFragment() {
-    private lateinit var breakViewModel: BreakViewModel
-    private var _binding: FragmentHomeBinding? = null
-
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
-
-        return root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
-
-    override fun onTimerFinish() {
-        val toast = Toast.makeText(
-            view?.context,
-            getString(R.string.pomodoro_toast_session_complete),
-            Toast.LENGTH_SHORT
-        )
-        toast.show()
-        breakViewModel.button?.text = getString(R.string.pomodoro_save_session_button)
-        breakViewModel.pomodoroComplete = true
-        breakViewModel.pomodoroActive = false
-
-        // hide end button
-        breakViewModel.endButton?.visibility = INVISIBLE
-    }
-
-    fun backToPomodoro () {
-        // TODO:
-        // replace the fragment with a HomeFragment
-
-    }
-
-    override fun saveSession() {
-        backToPomodoro()
-    }
-
-    override fun endSession() {
-        // endbutton hide if prematurely ended
-        breakViewModel.endButton?.visibility = INVISIBLE
-
-        // start button
-        breakViewModel.button?.text = getString(R.string.pomodoro_end_break_button)
-
-        backToPomodoro()
-    }
-
-    override fun confirmEndSession() {
-        // check if break should be ended?
-        // or just go ahead and end it anyway?
-        endSession()
-    }
-    override fun updateVisualBlocks(millisUntilFinished: Long) {
-        breakViewModel.sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
-        breakViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
-    }
-}
-
-fun countDownTimerCreate(view: View, cls: HomeFragment, millisLeft: Long, but: Button) : CountDownTimer {
-    return object: CountDownTimer(millisLeft, 1000) {
-        override fun onTick(millisUntilFinished: Long) {
-            cls.updateVisualBlocks(millisUntilFinished)
-        }
-
-        override fun onFinish() {
-            cls.onTimerFinish()
-        }
-    }
-}

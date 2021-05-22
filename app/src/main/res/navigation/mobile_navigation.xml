@@ -11,13 +11,13 @@
         android:label="@string/menu_pomodoro"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_nav_pomodoro_to_analyticsFragment"
-            app:destination="@id/analyticsFragment" />
+            android:id="@+id/action_nav_pomodoro_to_breakFragment"
+            app:destination="@id/breakFragment" />
     </fragment>
     <fragment
-        android:id="@+id/analyticsFragment"
-        android:name="com.example.beyondpomodoro.ui.analytics.AnalyticsFragment"
-        android:label="fragment_analytics"
-        tools:layout="@layout/fragment_analytics" />
+        android:id="@+id/breakFragment"
+        android:name="com.example.beyondpomodoro.ui.home.BreakFragment"
+        android:label="BreakFragment"
+        tools:layout="@layout/break_fragment" />
 
 </navigation>
