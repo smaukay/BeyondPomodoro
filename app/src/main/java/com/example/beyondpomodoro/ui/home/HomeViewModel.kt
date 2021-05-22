@@ -1,6 +1,5 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.text.Editable
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.lifecycle.LiveData
@@ -17,15 +16,15 @@ open class HomeViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
-    public var numBlocksShow: UInt = 9u
-    public var imageButtonList: List<ImageView?>? = null
-    public var editTags: EditText? = null
-    public var chipGroup: ChipGroup? = null
-    public var tags: MutableMap<String, String> = mutableMapOf()
+    var numBlocksShow: UInt = 9u
+    var imageButtonList: List<ImageView?>? = null
+    var editTags: EditText? = null
+    var chipGroup: ChipGroup? = null
+    var tags: MutableMap<String, String> = mutableMapOf()
 
     // event variables
-    public var sessionStartTimeMillis: Long? = null
-    public var sessionEndTimeMillis: Long? = null
+    var sessionStartTimeMillis: Long? = null
+    var sessionEndTimeMillis: Long? = null
 
 
 }

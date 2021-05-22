@@ -10,7 +10,7 @@
     <string name="menu_pomodoro">Pomodoro</string>
     <string name="menu_analytics">Analytics</string>
     <string name="button_start">Start</string>
-    <string name="pomodoro_timer_idle"></string>
+    <string name="pomodoro_timer_idle" />
     <string name="pomodoro_stop_button">End</string>
     <string name="pomodoro_save_button">Save</string>
     <string name="dialog_end_session">Do you want to save this session?</string>
@@ -26,4 +26,5 @@
     <string name="dialog_session_time_ok">Set</string>
     <string name="pomodoro_end_break_button">Resume</string>
     <string name="pomodoro_break_end_message">Back</string>
+    <string name="pomodoro_break_end">Back</string>
 </resources>

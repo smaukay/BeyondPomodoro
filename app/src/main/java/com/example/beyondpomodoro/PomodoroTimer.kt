@@ -5,20 +5,18 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import com.example.beyondpomodoro.ui.home.HomeFragment
 import com.example.beyondpomodoro.ui.home.SetTimeDialogFragment
 import com.example.beyondpomodoro.ui.home.TimerFragment
-import java.util.*
 
 class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragment) {
-    public var sessionTimeSecondsLeft: UInt = sessionTimeSeconds
-    public var sessionTimeSeconds: UInt = sessionTimeSeconds
-    public var pomodoroComplete: Boolean = false
-    public var pomodoroActive = false
-    public lateinit var startButton: Button
-    public lateinit var endButton: Button
-    public lateinit var textViewSeconds: TextView
-    public var countDownTimer: CountDownTimer? = null
+    var sessionTimeSecondsLeft: UInt = sessionTimeSeconds
+    var sessionTimeSeconds: UInt = sessionTimeSeconds
+    var pomodoroComplete: Boolean = false
+    var pomodoroActive = false
+    lateinit var startButton: Button
+    lateinit var endButton: Button
+    lateinit var textViewSeconds: TextView
+    var countDownTimer: CountDownTimer? = null
     private val fragment = fragment
     private var view = view
 
@@ -62,11 +60,11 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
             }
         }
     }
-    fun convertMinutesToDisplayString() : String {
+    private fun convertMinutesToDisplayString() : String {
         return (sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
     }
 
-    fun toggle() {
+    private fun toggle() {
         if (pomodoroActive) {
             countDownTimer?.cancel()
             pomodoroActive = false
@@ -76,10 +74,10 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
             pomodoroActive = true
             countDownTimerCreate((sessionTimeSecondsLeft * 1000u).toLong())
             countDownTimer?.start()
-            textViewSeconds!!.text = convertMinutesToDisplayString()
+            textViewSeconds.text = convertMinutesToDisplayString()
 
             startButton.text = view.context.getString(R.string.pomodoro_pause_session_button)
-            endButton?.visibility = View.VISIBLE
+            endButton.visibility = View.VISIBLE
             fragment.startSession()
         }
         else if (pomodoroComplete) {
@@ -90,10 +88,10 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
 
     fun buttonsReset() {
         // endbutton hide
-        endButton?.visibility = View.INVISIBLE
+        endButton.visibility = View.INVISIBLE
 
         // start button
-        startButton?.text = view.context.getString(R.string.pomodoro_start_session_button)
+        startButton.text = view.context.getString(R.string.pomodoro_start_session_button)
     }
 
 
@@ -111,20 +109,20 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
         // set timer back to full
         sessionTimeSecondsLeft = sessionTimeSeconds
         // set text back to timer
-        textViewSeconds?.text = convertMinutesToDisplayString()
+        textViewSeconds.text = convertMinutesToDisplayString()
     }
 
     private fun updateVisualBlocks(millisUntilFinished: Long) {
         sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
-        textViewSeconds?.text = convertMinutesToDisplayString()
+        textViewSeconds.text = convertMinutesToDisplayString()
     }
 
     private fun onTimerFinish() {
-        startButton?.text = view.context.getString(R.string.pomodoro_save_session_button)
+        startButton.text = view.context.getString(R.string.pomodoro_save_session_button)
         pomodoroComplete = true
         pomodoroActive = false
         // hide end button
-        endButton?.visibility = View.INVISIBLE
+        endButton.visibility = View.INVISIBLE
     }
 
     private fun countDownTimerCreate(millisLeft: Long) {

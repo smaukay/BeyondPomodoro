@@ -12,7 +12,6 @@ import com.example.beyondpomodoro.R
 class BreakFragment : TimerFragment() {
 
     companion object {
-        fun newInstance() = TimerFragment()
     }
 
     private lateinit var viewModel: BreakViewModel
@@ -29,12 +28,6 @@ class BreakFragment : TimerFragment() {
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // TODO: add animation sprites
-    }
-
     override fun onTimerFinish() {
         val toast = Toast.makeText(
             view?.context,
@@ -43,7 +36,7 @@ class BreakFragment : TimerFragment() {
         )
         toast.show()
 
-        timer.startButton.text = "Back"
+        timer.startButton.text = getString(R.string.pomodoro_break_end)
     }
 
     fun backToPomodoro () {

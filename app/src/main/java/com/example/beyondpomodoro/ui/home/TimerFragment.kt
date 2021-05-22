@@ -14,7 +14,6 @@ open class TimerFragment : Fragment() {
     protected lateinit var timer: PomodoroTimer
 
     companion object {
-        fun newInstance() = TimerFragment()
     }
 
     protected lateinit var timerViewModel: TimerViewModel
@@ -22,7 +21,7 @@ open class TimerFragment : Fragment() {
     open fun startSession() {
     }
 
-    fun convertMinutesToDisplayString() : String {
+    private fun convertMinutesToDisplayString() : String {
         return (timerViewModel.sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (timerViewModel.sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
     }
 

@@ -2,7 +2,6 @@ package com.example.beyondpomodoro.ui.home
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.provider.CalendarContract
@@ -34,12 +33,12 @@ class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
             val builder = AlertDialog.Builder(it)
             builder.setMessage(R.string.dialog_end_session)
                 .setPositiveButton(R.string.end_session_save,
-                    DialogInterface.OnClickListener { dialog, id ->
+                    { dialog, id ->
                         // save session fragment
                         caller.saveSession()
                     })
                 .setNegativeButton(R.string.end_session_nosave,
-                    DialogInterface.OnClickListener { dialog, id ->
+                    { dialog, id ->
                         // no save :(
                         caller.endSession()
                     })
@@ -51,10 +50,6 @@ class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
 
 class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
     private val caller: TimerFragment = caller
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -81,7 +76,7 @@ class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
 
 open class HomeFragment : TimerFragment() {
 
-    lateinit var homeViewModel: HomeViewModel
+    private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
 
     // This property is only valid between onCreateView and
@@ -100,7 +95,7 @@ open class HomeFragment : TimerFragment() {
         homeViewModel.sessionEndTimeMillis = Calendar.getInstance().timeInMillis
 
         // create a calendar event description from tags added
-        var descriptionSuggestion = view?.findViewById<ChipGroup>(R.id.chipGroup)?.children?.toList()?.map { c -> (c as Chip).text.toString() }?.reduceOrNull() { acc, c -> "$acc, $c" }
+        var descriptionSuggestion = view?.findViewById<ChipGroup>(R.id.chipGroup)?.children?.toList()?.map { c -> (c as Chip).text.toString() }?.reduceOrNull { acc, c -> "$acc, $c" }
         if (descriptionSuggestion.isNullOrBlank()) {
             descriptionSuggestion = ""
         }
@@ -118,7 +113,7 @@ open class HomeFragment : TimerFragment() {
 
 
         // after saving we end session anyway
-        endSession();
+        endSession()
     }
 
     override fun endSession() {
@@ -144,9 +139,8 @@ open class HomeFragment : TimerFragment() {
             ViewModelProvider(this).get(HomeViewModel::class.java)
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        return root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -154,13 +148,13 @@ open class HomeFragment : TimerFragment() {
         val cls = this
 
         setupVisualBlocks(view)
-        homeViewModel.chipGroup = view.findViewById<ChipGroup>(R.id.chipGroup)
+        homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
 
         // all existing tags
         homeViewModel.tags.forEach {
             val chip = Chip(this.requireContext())
             chip.text = it.key
-            chip.setCloseIconVisible(true)
+            chip.isCloseIconVisible = true
             chip.setOnCloseIconClickListener {
                 // remove chip from chipgroup
                 homeViewModel.chipGroup?.removeView(chip)
@@ -175,7 +169,7 @@ open class HomeFragment : TimerFragment() {
             }
         }
 
-        homeViewModel.editTags = view.findViewById<EditText>(R.id.editTextTags)
+        homeViewModel.editTags = view.findViewById(R.id.editTextTags)
         homeViewModel.editTags?.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
@@ -185,14 +179,14 @@ open class HomeFragment : TimerFragment() {
                         false -> {
                             val chip = Chip(this.requireContext())
                             chip.text = tag
-                            chip.setCloseIconVisible(true)
+                            chip.isCloseIconVisible = true
                             chip.setOnCloseIconClickListener {
                                 // remove chip from chipgroup
                                 homeViewModel.chipGroup?.removeView(chip)
                                 homeViewModel.tags.remove(tag)
                             }
                             homeViewModel.chipGroup?.addView(chip)
-                            homeViewModel.tags.put(tag, tag)
+                            homeViewModel.tags[tag] = tag
                         }
                         else ->
                             {
@@ -211,7 +205,7 @@ open class HomeFragment : TimerFragment() {
         timer = PomodoroTimer(30u, view,this)
     }
 
-    fun setupVisualBlocks(view: View) {
+    private fun setupVisualBlocks(view: View) {
         // create array of buttons
         // TODO: setup colour themes etc if needed
         val imageButtonIds = arrayOf(
@@ -233,7 +227,7 @@ open class HomeFragment : TimerFragment() {
         println("DEBUG: Found $homeViewModel.imageButtonList.size visual blocks")
     }
 
-    fun showAllVisualBlocks() {
+    private fun showAllVisualBlocks() {
         // when user ends session, set all visual blocks back to active
         homeViewModel.imageButtonList?.forEach {
             it?.visibility = VISIBLE
@@ -251,7 +245,7 @@ open class HomeFragment : TimerFragment() {
         println("numblocks: $numBlocksShow")
         if(homeViewModel.numBlocksShow != numBlocksShow) {
             // number of blocks to show changed
-            homeViewModel.imageButtonList?.let {
+            homeViewModel.imageButtonList?.let { it ->
                 it.subList(numBlocksShow.toInt(), 9).forEach {
                     it?.visibility = INVISIBLE
                 }
