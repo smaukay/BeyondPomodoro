@@ -4,4 +4,5 @@ android:oneshot="false">
     <item android:drawable="@drawable/r_slime_orange_0" android:duration="200" />
     <item android:drawable="@drawable/r_slime_orange_1" android:duration="200" />
     <item android:drawable="@drawable/r_slime_orange_2" android:duration="200" />
+    <item android:drawable="@drawable/r_slime_orange_3" android:duration="200" />
 </animation-list>
