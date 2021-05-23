@@ -13,6 +13,7 @@ import com.example.beyondpomodoro.R
 
 class BreakFragment : TimerFragment() {
 
+    private var sprites: List<Int> = listOf(R.drawable.fox_run, R.drawable.worm_run_idle, R.drawable.blue_slime, R.drawable.green_slime, R.drawable.orange_slime)
     companion object {
     }
 
@@ -30,7 +31,8 @@ class BreakFragment : TimerFragment() {
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
 
         val rocketImage = view?.findViewById<ImageView>(R.id.breakSprite)?.let {
-            it.setBackgroundResource(R.drawable.fox_run)
+            // TODO: set sprite based on how well the session went?
+            it.setBackgroundResource(sprites.random())
             (it.background as AnimationDrawable).start()
         }
     }
