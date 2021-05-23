@@ -23,15 +23,15 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
     init
     {
         val cls = this
-        textViewSeconds = view.findViewById<TextView>(R.id.textView2).apply {
+        textViewSeconds = view.findViewWithTag<TextView>("timerDisplay").apply {
             text = convertMinutesToDisplayString()
 
             // onclick open dialog to enter time
             setOnClickListener {
-                when(pomodoroActive and !pomodoroComplete) {
+                when(pomodoroActive or !pomodoroComplete) {
                     true ->
                     {
-                        //TODO: send toast saying time cannot be changed
+                        //TODO: check if this works (i.e. no mutable) when paused
                         val toast = Toast.makeText(
                             view.context,
                             "The session is already active. You can end it if you like.",
@@ -48,13 +48,13 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
             }
         }
 
-        endButton = view.findViewById<Button>(R.id.button4).apply {
+        endButton = view.findViewWithTag<Button>("endButton").apply {
             this.setOnClickListener {
                 fragment.confirmEndSession()
             }
         }
 
-        startButton = view.findViewById<Button>(R.id.button).apply {
+        startButton = view.findViewWithTag<Button>("startButton").apply {
             this.setOnClickListener {
                 cls.toggle()
             }
@@ -93,7 +93,6 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
         // start button
         startButton.text = view.context.getString(R.string.pomodoro_start_session_button)
     }
-
 
     fun pomodoroReset() {
         // set pomodoro completeness as false

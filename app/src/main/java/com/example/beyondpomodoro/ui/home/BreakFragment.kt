@@ -57,6 +57,10 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
+        timer.clockReset()
+        timer.pomodoroReset()
+        timer.buttonsReset()
+
         backToPomodoro()
     }
 
