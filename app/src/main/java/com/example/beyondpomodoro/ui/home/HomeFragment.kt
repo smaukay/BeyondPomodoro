@@ -2,7 +2,9 @@ package com.example.beyondpomodoro.ui.home
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.view.LayoutInflater
@@ -12,6 +14,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
@@ -83,6 +86,8 @@ open class HomeFragment : TimerFragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    // tag colours in an array
+    private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
     override fun saveSession() {
         val toast = Toast.makeText(
             view?.context,
@@ -160,6 +165,15 @@ open class HomeFragment : TimerFragment() {
                 homeViewModel.chipGroup?.removeView(chip)
                 homeViewModel.tags.remove(tag)
             }
+
+            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                if(prefs.contains("tag_colour_${it.key}")) {
+                    chip.chipBackgroundColor = ColorStateList.valueOf(prefs.getInt("tag_colour_${it.key}", 1))
+                }
+            }
+
+            chip.chipBackgroundColor = it.value
+
             homeViewModel.chipGroup?.addView(chip)
         }
 
@@ -185,14 +199,33 @@ open class HomeFragment : TimerFragment() {
                                 homeViewModel.chipGroup?.removeView(chip)
                                 homeViewModel.tags.remove(tag)
                             }
+                            // TODO: was this tag previously entered?
+                            // if so, what colour was assigned to it?
+                            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                                chip.chipBackgroundColor = if(prefs.contains("tag_colour_${tag}")) {
+                                    ColorStateList.valueOf(prefs.getInt("tag_colour_${tag}", 1))
+                                } else {
+                                    context?.let {
+                                        ContextCompat.getColor(it, tagColours.random() ).let { colourSelect ->
+                                            // save this colour for this tag
+                                            with(prefs?.edit()) {
+                                                putInt("tag_colour_${tag}", colourSelect)
+                                                apply()
+                                            }
+                                            println("DEBUG: $colourSelect")
+                                            ColorStateList.valueOf(colourSelect)
+                                        }
+                                    }
+                                }
+                            }
                             homeViewModel.chipGroup?.addView(chip)
-                            homeViewModel.tags[tag] = tag
                         }
                         else ->
                             {
                                 // TODO: highlight the chip if already present
                             }
                     }
+
                     homeViewModel.editTags?.setText("")
                     true
                 }
