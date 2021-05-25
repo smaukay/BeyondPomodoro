@@ -7,7 +7,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <string name="menu_pomodoro">Pomodoro</string>
+    <string name="menu_pomodoro">Pomodoro session</string>
     <string name="menu_analytics">Analytics</string>
     <string name="button_start">Start</string>
     <string name="pomodoro_timer_idle" />
@@ -27,4 +27,7 @@
     <string name="pomodoro_end_break_button">Resume</string>
     <string name="pomodoro_break_end_message">Back</string>
     <string name="pomodoro_break_end">Back</string>
+    <string name="menu_about">About</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Beyond Pomodoro</string>
 </resources>

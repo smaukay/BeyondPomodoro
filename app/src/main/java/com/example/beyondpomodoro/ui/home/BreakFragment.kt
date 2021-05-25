@@ -45,7 +45,7 @@ class BreakFragment : TimerFragment() {
         )
         toast.show()
 
-        timer.startButton.text = getString(R.string.pomodoro_break_end)
+        timer?.startButton?.text = getString(R.string.pomodoro_break_end)
     }
 
     fun backToPomodoro () {
@@ -59,9 +59,9 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
-        timer.clockReset()
-        timer.pomodoroReset()
-        timer.buttonsReset()
+        timer?.clockReset()
+        timer?.pomodoroReset()
+        timer?.buttonsReset()
 
         backToPomodoro()
     }

@@ -20,7 +20,6 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.example.beyondpomodoro.PomodoroTimer
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.google.android.material.chip.Chip
@@ -56,7 +55,7 @@ class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val minutesEditText = view.findViewById<TextView>(R.id.editTextSessionMinutes)
+        val minutesEditText = view.findViewById<EditText>(R.id.editTextSessionMinutes)
         view.findViewById<Button>(R.id.set_time_button).apply {
 
             setOnClickListener {
@@ -123,9 +122,9 @@ open class HomeFragment : TimerFragment() {
 
     override fun endSession() {
 
-        timer.clockReset()
-        timer.pomodoroReset()
-        timer.buttonsReset()
+        timer?.clockReset()
+        timer?.pomodoroReset()
+        timer?.buttonsReset()
 
         // show all visual image blocks
         showAllVisualBlocks()
@@ -274,7 +273,7 @@ open class HomeFragment : TimerFragment() {
 
     override fun updateVisualBlocks(millisUntilFinished: Long) {
         // check if any visualblocks to be disappeared?
-        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (timerViewModel.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
+        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (timer!!.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
         println("numblocks: $numBlocksShow")
         if(homeViewModel.numBlocksShow != numBlocksShow) {
             // number of blocks to show changed

@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.beyondpomodoro.PomodoroTimer
 import com.example.beyondpomodoro.R
 
 open class TimerFragment : Fragment() {
-    protected lateinit var timer: PomodoroTimer
+    protected var timer: PomodoroTimer? = null
 
     companion object {
     }
@@ -21,14 +20,9 @@ open class TimerFragment : Fragment() {
     open fun startSession() {
     }
 
-    private fun convertMinutesToDisplayString() : String {
-        return (timerViewModel.sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (timerViewModel.sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
-    }
-
     fun setSessionTime(s: UInt) {
-        timerViewModel.sessionTimeSeconds = s
-        timerViewModel.sessionTimeSecondsLeft = s
-        timerViewModel.textViewSeconds?.text = convertMinutesToDisplayString()
+        println("DEBUG: setSessionTime, $s")
+        timer = view?.let { PomodoroTimer(s, it,this) }
     }
 
 

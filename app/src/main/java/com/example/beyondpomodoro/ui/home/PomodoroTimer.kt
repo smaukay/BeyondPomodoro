@@ -1,18 +1,38 @@
-package com.example.beyondpomodoro
+package com.example.beyondpomodoro.ui.home
 
 import android.os.CountDownTimer
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import com.example.beyondpomodoro.ui.home.SetTimeDialogFragment
-import com.example.beyondpomodoro.ui.home.TimerFragment
+import com.example.beyondpomodoro.R
 
 class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragment) {
+
+    enum class State {
+        INACTIVE {
+            override fun nextState() = ACTIVE_RUNNING
+        },
+
+        ACTIVE_RUNNING {
+            override fun nextState() = ACTIVE_PAUSED
+        },
+
+        ACTIVE_PAUSED {
+            override fun nextState() = ACTIVE_RUNNING
+        },
+
+        COMPLETE {
+            override fun nextState() = INACTIVE
+        };
+
+        abstract fun nextState(): State
+    }
+
+    var state: State = State.INACTIVE
+
     var sessionTimeSecondsLeft: UInt = sessionTimeSeconds
     var sessionTimeSeconds: UInt = sessionTimeSeconds
-    var pomodoroComplete: Boolean = false
-    var pomodoroActive = false
     lateinit var startButton: Button
     lateinit var endButton: Button
     lateinit var textViewSeconds: TextView
@@ -28,8 +48,8 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
 
             // onclick open dialog to enter time
             setOnClickListener {
-                when(pomodoroActive or !pomodoroComplete) {
-                    true ->
+                when(state) {
+                    State.ACTIVE_PAUSED, State.ACTIVE_RUNNING ->
                     {
                         //TODO: check if this works (i.e. no mutable) when paused
                         val toast = Toast.makeText(
@@ -39,7 +59,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
                         )
                         toast.show()
                     }
-                    false -> {
+                    State.INACTIVE, State.COMPLETE -> {
                         SetTimeDialogFragment(fragment).show(fragment.parentFragmentManager, "pick_session_time")
                     }
 
@@ -56,7 +76,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
 
         startButton = view.findViewWithTag<Button>("startButton").apply {
             this.setOnClickListener {
-                cls.toggle()
+                cls.nextState()
             }
         }
     }
@@ -64,26 +84,29 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
         return (sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
     }
 
-    private fun toggle() {
-        if (pomodoroActive) {
-            countDownTimer?.cancel()
-            pomodoroActive = false
-            startButton.text = view.context.getString(R.string.pomodoro_resume_session_button)
-        }
-        else if ( (pomodoroActive == false) and (pomodoroComplete == false) ){
-            pomodoroActive = true
-            countDownTimerCreate((sessionTimeSecondsLeft * 1000u).toLong())
-            countDownTimer?.start()
-            textViewSeconds.text = convertMinutesToDisplayString()
+    private fun nextState() {
+        when(state) {
+            State.INACTIVE, State.ACTIVE_PAUSED -> {
+                countDownTimerCreate((sessionTimeSecondsLeft * 1000u).toLong())
+                countDownTimer?.start()
+                textViewSeconds.text = convertMinutesToDisplayString()
 
-            startButton.text = view.context.getString(R.string.pomodoro_pause_session_button)
-            endButton.visibility = View.VISIBLE
-            fragment.startSession()
+                startButton.text = view.context.getString(R.string.pomodoro_pause_session_button)
+                endButton.visibility = View.VISIBLE
+                fragment.startSession()
+            }
+
+            State.ACTIVE_RUNNING -> {
+                countDownTimer?.cancel()
+                startButton.text = view.context.getString(R.string.pomodoro_resume_session_button)
+            }
+
+            State.COMPLETE -> {
+                // this is now a save session button
+                fragment.saveSession()
+            }
         }
-        else if (pomodoroComplete) {
-            // this is now a save session button
-            fragment.saveSession()
-        }
+        state = state.nextState()
     }
 
     fun buttonsReset() {
@@ -96,8 +119,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
 
     fun pomodoroReset() {
         // set pomodoro completeness as false
-        pomodoroComplete = false
-        pomodoroActive = false
+        state = State.INACTIVE
     }
 
     fun clockReset() {
@@ -118,8 +140,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
 
     private fun onTimerFinish() {
         startButton.text = view.context.getString(R.string.pomodoro_save_session_button)
-        pomodoroComplete = true
-        pomodoroActive = false
+        state = State.COMPLETE
         // hide end button
         endButton.visibility = View.INVISIBLE
     }
