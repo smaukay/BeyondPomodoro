@@ -19,6 +19,7 @@ class BreakFragment : TimerFragment() {
 
     private lateinit var viewModel: BreakViewModel
 
+    override var notificationTitle = "Break running"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -70,7 +71,5 @@ class BreakFragment : TimerFragment() {
         // check if break should be ended?
         // or just go ahead and end it anyway?
         endSession()
-    }
-    override fun updateVisualBlocks(millisUntilFinished: Long) {
     }
 }

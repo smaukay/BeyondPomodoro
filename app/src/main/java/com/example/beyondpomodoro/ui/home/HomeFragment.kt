@@ -81,6 +81,9 @@ open class HomeFragment : TimerFragment() {
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
 
+    // override notification title
+    override var notificationTitle = "Pomodoro Running"
+
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -211,7 +214,6 @@ open class HomeFragment : TimerFragment() {
                                                 putInt("tag_colour_${tag}", colourSelect)
                                                 apply()
                                             }
-                                            println("DEBUG: $colourSelect")
                                             ColorStateList.valueOf(colourSelect)
                                         }
                                     }
@@ -256,7 +258,6 @@ open class HomeFragment : TimerFragment() {
             view.findViewById(it)
         }
 
-        println("DEBUG: Found $homeViewModel.imageButtonList.size visual blocks")
     }
 
     private fun showAllVisualBlocks() {
@@ -272,9 +273,10 @@ open class HomeFragment : TimerFragment() {
     }
 
     override fun updateVisualBlocks(millisUntilFinished: Long) {
+        super.updateVisualBlocks(millisUntilFinished)
+
         // check if any visualblocks to be disappeared?
         val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (timer!!.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
-        println("numblocks: $numBlocksShow")
         if(homeViewModel.numBlocksShow != numBlocksShow) {
             // number of blocks to show changed
             homeViewModel.imageButtonList?.let { it ->
@@ -298,6 +300,7 @@ open class HomeFragment : TimerFragment() {
     }
 
     override fun onTimerFinish() {
+        super.onTimerFinish()
         hideAllVisualBlocks()
 
         val toast = Toast.makeText(

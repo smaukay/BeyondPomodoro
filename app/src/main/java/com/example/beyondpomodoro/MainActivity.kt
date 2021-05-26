@@ -1,5 +1,9 @@
 package com.example.beyondpomodoro
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +41,23 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create the persistent NotificationChannel for showing timer
+            val name = getString(R.string.alert_channel_name)
+            val descriptionText = getString(R.string.alert_channel_description)
+            val alertChannel = NotificationChannel(getString(R.string.alert_channel_id), name, NotificationManager.IMPORTANCE_DEFAULT)
+            alertChannel.description = descriptionText
+
+            val persistentChannel = NotificationChannel(getString(R.string.persistent_channel_id), getString(R.string.persistent_channel_name), NotificationManager.IMPORTANCE_LOW)
+            persistentChannel.description = getString(R.string.persistent_channel_description)
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(alertChannel)
+            notificationManager.createNotificationChannel(persistentChannel)
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -30,4 +30,10 @@
     <string name="menu_about">About</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Beyond Pomodoro</string>
+    <string name="alert_channel_name">alertBeyondPomodoro</string>
+    <string name="alert_channel_description">Notifications for BeyondPomodoro</string>
+    <string name="alert_channel_id">alertChannelBeyondPomodoro</string>
+    <string name="persistent_channel_name">persistentBeyondPomodoro</string>
+    <string name="persistent_channel_description">Status bar timer view for BeyondPomodoro</string>
+    <string name="persistent_channel_id">persistentChannelBeyondPomodoro</string>
 </resources>

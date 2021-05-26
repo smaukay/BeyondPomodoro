@@ -4,13 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.beyondpomodoro.R
 
 open class TimerFragment : Fragment() {
+    private var notificationId: Int = 0
     protected var timer: PomodoroTimer? = null
+    protected open var notificationTitle: String = ""
 
     companion object {
     }
@@ -21,7 +24,6 @@ open class TimerFragment : Fragment() {
     }
 
     fun setSessionTime(s: UInt) {
-        println("DEBUG: setSessionTime, $s")
         timer = view?.let { PomodoroTimer(s, it,this) }
     }
 
@@ -45,13 +47,44 @@ open class TimerFragment : Fragment() {
     }
 
     open fun onTimerFinish() {
-        val toast = Toast.makeText(
-            view?.context,
-            getString(R.string.pomodoro_toast_session_complete),
-            Toast.LENGTH_SHORT
-        )
-        toast.show()
+        context?.let {
+            with(NotificationManagerCompat.from(it)) {
+                cancelAll()
+            }
+        }
 
+        println("DEBUG: Notifying")
+        endNotification()
+    }
+
+    open fun persistentTimedNotification() {
+        context?.let {
+            val builder = NotificationCompat.Builder(it, getString(R.string.persistent_channel_id))
+                .setSmallIcon(R.drawable.app_logo)
+                .setContentTitle("$notificationTitle")
+                .setContentText("Time remaining: ${timer?.convertMinutesToDisplayString()}")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+            with(NotificationManagerCompat.from(it)) {
+                // notificationId is a unique int for each notification that you must define
+                notify(notificationId, builder.build())
+            }
+        }
+    }
+
+    open fun endNotification() {
+        context?.let {
+            val builder = NotificationCompat.Builder(it, getString(R.string.alert_channel_id))
+                .setSmallIcon(R.drawable.app_logo)
+                .setContentTitle("$notificationTitle")
+                .setContentText("Session complete")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            with(NotificationManagerCompat.from(it)) {
+                // notificationId is a unique int for each notification that you must define
+                notify(notificationId + 1, builder.build())
+            }
+        }
     }
 
     open fun saveSession() {
@@ -64,7 +97,7 @@ open class TimerFragment : Fragment() {
     }
 
     open fun updateVisualBlocks(millisUntilFinished: Long) {
-
+        persistentTimedNotification()
     }
 
 }

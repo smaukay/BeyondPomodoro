@@ -80,7 +80,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
             }
         }
     }
-    private fun convertMinutesToDisplayString() : String {
+    fun convertMinutesToDisplayString() : String {
         return (sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
     }
 
