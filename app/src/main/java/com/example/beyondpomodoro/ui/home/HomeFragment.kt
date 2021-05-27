@@ -154,6 +154,9 @@ open class HomeFragment : TimerFragment() {
         super.onViewCreated(view, savedInstanceState)
         val cls = this
 
+
+        timer = PomodoroTimer(sessionTimeSeconds, view,this)
+
         setupVisualBlocks(view)
         homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
 

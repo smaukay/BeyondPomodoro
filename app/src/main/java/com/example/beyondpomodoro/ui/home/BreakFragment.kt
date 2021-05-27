@@ -30,8 +30,12 @@ class BreakFragment : TimerFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
+    }
 
-        val rocketImage = view?.findViewById<ImageView>(R.id.breakSprite)?.let {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        timer = PomodoroTimer(sessionTimeSeconds, view,this)
+
+        view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
             it.setBackgroundResource(sprites.random())
             (it.background as AnimationDrawable).start()

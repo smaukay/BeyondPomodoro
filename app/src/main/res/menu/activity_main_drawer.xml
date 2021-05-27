@@ -12,5 +12,9 @@
             android:id="@+id/aboutFragment"
             android:icon="@android:drawable/presence_online"
             android:title="@string/menu_about" />
+        <item
+            android:id="@+id/sessionInfoFragment"
+            android:icon="@android:drawable/ic_media_play"
+            android:title="@string/menu_session_type" />
     </group>
 </menu>

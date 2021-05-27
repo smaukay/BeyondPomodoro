@@ -1,5 +1,6 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,14 +8,19 @@ import android.view.ViewGroup
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.beyondpomodoro.R
 
 open class TimerFragment : Fragment() {
     private var notificationId: Int = 0
+    protected var breakTimeSeconds: UInt = 5u * 60u
+    protected var sessionTimeSeconds: UInt = 25u * 60u
+
     protected var timer: PomodoroTimer? = null
     protected open var notificationTitle: String = ""
 
+    private val sharedData: SharedViewModel by activityViewModels()
     companion object {
     }
 
@@ -38,12 +44,29 @@ open class TimerFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         timerViewModel = ViewModelProvider(this).get(TimerViewModel::class.java)
-        // TODO: Use the ViewModel
+
+        // get the last activity type on activity creation and store in sharedData
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+            if (prefs.contains("sessionType")) {
+                sharedData.sessionType?.value = prefs.getString("sessionType", "default")
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        timer = PomodoroTimer(30u, view,this)
+
+        val sessionType = sharedData.sessionType.toString()
+        when (sessionType) {
+            "default" -> {
+            }
+            else -> {
+                activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                    sessionTimeSeconds = prefs.getInt("pomodoroTimeFor$sessionType", 30).toUInt() * 60u
+                    breakTimeSeconds = prefs.getInt("breakTimeFor$sessionType", 30).toUInt() * 60u
+                }
+            }
+        }
     }
 
     open fun onTimerFinish() {

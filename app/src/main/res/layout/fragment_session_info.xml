@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <EditText
+        android:id="@+id/editTextSessionInfoTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:ems="7"
+        android:hint="name this session type"
+        android:inputType="textPersonName"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="28dp"
+        tools:layout_conversion_absoluteWidth="210dp" />
+
+    <TextView
+        android:id="@+id/textViewSessionInfoPomodoroTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:padding="2dp"
+        android:text="25m"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintStart_toEndOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintTop_toTopOf="@+id/editTextSessionInfoTitle"
+        tools:layout_conversion_absoluteHeight="23dp"
+        tools:layout_conversion_absoluteWidth="32dp" />
+
+    <TextView
+        android:id="@+id/textViewSessionInfoBreakTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:padding="2dp"
+        android:text="5m"
+        app:layout_constraintEnd_toEndOf="@+id/textViewSessionInfoPomodoroTime"
+        app:layout_constraintStart_toStartOf="@+id/textViewSessionInfoPomodoroTime"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSessionInfoPomodoroTime"
+        tools:layout_conversion_absoluteHeight="23dp"
+        tools:layout_conversion_absoluteWidth="24dp" />
+
+    <TextView
+        android:id="@+id/tagsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:padding="2dp"
+        android:text="tag1, tag2, tag3"
+        app:layout_constraintEnd_toEndOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintStart_toStartOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintTop_toBottomOf="@+id/editTextSessionInfoTitle"
+        tools:layout_conversion_absoluteHeight="23dp"
+        tools:layout_conversion_absoluteWidth="101dp" />
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Start"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewSessionInfoPomodoroTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewSessionInfoPomodoroTime" />
+</androidx.constraintlayout.widget.ConstraintLayout>

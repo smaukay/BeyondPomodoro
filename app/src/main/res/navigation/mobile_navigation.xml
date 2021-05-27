@@ -24,5 +24,10 @@
         android:name="com.example.beyondpomodoro.ui.home.AboutFragment"
         android:label="fragment_about"
         tools:layout="@layout/fragment_about" />
+    <fragment
+        android:id="@+id/sessionInfoFragment"
+        android:name="com.example.beyondpomodoro.SessionInfoFragment"
+        android:label="fragment_session_info_list"
+        tools:layout="@layout/fragment_session_info_list" />
 
 </navigation>
