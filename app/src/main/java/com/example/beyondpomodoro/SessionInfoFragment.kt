@@ -1,5 +1,6 @@
 package com.example.beyondpomodoro
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
-import com.example.beyondpomodoro.placeholder.SessionType
+import com.example.beyondpomodoro.sessiontype.SessionList
+import com.example.beyondpomodoro.sessiontype.SessionType
 
 /**
  * A fragment representing a list of Items.
@@ -43,7 +45,47 @@ class SessionInfoFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = MySessionInfoRecyclerViewAdapter(SessionType.ITEMS)
+
+                // get the last activity type on activity creation and store in sharedData
+                activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                    val settingsSet = if (prefs.contains("sessionList")) {
+                        val default: Set<String> = setOf()
+                        prefs.getString("sessionList", "")?.let {
+                            val sessionNames = it.split("<SESNAME>")
+                            sessionNames.map { sname ->
+                                prefs.getString(sname, sname).orEmpty()
+                            }
+                        }?: run {
+                            listOf()
+                        }
+                    } else {
+                        listOf()
+                    }
+
+                    println("DEBUG: $settingsSet")
+
+                    // now collect the info for this session id
+                    val sessions = settingsSet.mapIndexed { num, sessionId ->
+                        val title = prefs.getString("$sessionId", "")
+                        val onTime = prefs.getInt("pomodoroTimeFor$sessionId", 25).toUInt()
+                        val offTime = prefs.getInt("breakTimeFor$sessionId", 5).toUInt()
+                        val tags = prefs.getString("tagsFor$sessionId", "")
+                        println("DEBUG: $sessionId, $onTime, $offTime")
+                        title?.let {
+                            tags?.let {
+                                SessionType(num.toUInt(), title, onTime, offTime, tags)
+                            }
+                        }
+
+                    }
+
+                    adapter = MySessionInfoRecyclerViewAdapter(
+                        SessionList(
+                        sessions
+                    ).items)
+
+                }
+
             }
         }
         return view

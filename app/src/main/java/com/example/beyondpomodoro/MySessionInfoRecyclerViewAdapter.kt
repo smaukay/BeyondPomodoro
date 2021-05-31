@@ -6,7 +6,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.databinding.FragmentSessionInfoBinding
-import com.example.beyondpomodoro.placeholder.SessionType.SessionType
+import com.example.beyondpomodoro.sessiontype.SessionType
 
 /**
  * [RecyclerView.Adapter] that can display a [SessionType].

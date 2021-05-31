@@ -20,7 +20,7 @@ open class TimerFragment : Fragment() {
     protected var timer: PomodoroTimer? = null
     protected open var notificationTitle: String = ""
 
-    private val sharedData: SharedViewModel by activityViewModels()
+    protected val sharedData: SharedViewModel by activityViewModels()
     companion object {
     }
 
@@ -29,10 +29,9 @@ open class TimerFragment : Fragment() {
     open fun startSession() {
     }
 
-    fun setSessionTime(s: UInt) {
+    open fun setSessionTime(s: UInt) {
         timer = view?.let { PomodoroTimer(s, it,this) }
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,8 +46,8 @@ open class TimerFragment : Fragment() {
 
         // get the last activity type on activity creation and store in sharedData
         activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-            if (prefs.contains("sessionType")) {
-                sharedData.sessionType?.value = prefs.getString("sessionType", "default")
+            if (prefs.contains("lastSessionType")) {
+                sharedData.sessionType?.value = prefs.getString("lastSessionType", "default")
             }
         }
     }
@@ -56,15 +55,10 @@ open class TimerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val sessionType = sharedData.sessionType.toString()
-        when (sessionType) {
-            "default" -> {
-            }
-            else -> {
-                activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                    sessionTimeSeconds = prefs.getInt("pomodoroTimeFor$sessionType", 30).toUInt() * 60u
-                    breakTimeSeconds = prefs.getInt("breakTimeFor$sessionType", 30).toUInt() * 60u
-                }
+        sharedData.sessionType?.let { sessionType ->
+            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                sessionTimeSeconds = prefs.getInt("pomodoroTimeFor$sessionType", 25).toUInt() * 60u
+                breakTimeSeconds = prefs.getInt("breakTimeFor$sessionType", 5).toUInt() * 60u
             }
         }
     }

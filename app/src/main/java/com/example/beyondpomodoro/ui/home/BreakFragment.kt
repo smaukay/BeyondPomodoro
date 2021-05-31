@@ -1,5 +1,6 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.content.Context
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -33,13 +34,19 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        timer = PomodoroTimer(sessionTimeSeconds, view,this)
+        super.onViewCreated(view, savedInstanceState)
+        timer = PomodoroTimer(breakTimeSeconds, view,this)
 
         view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
             it.setBackgroundResource(sprites.random())
             (it.background as AnimationDrawable).start()
         }
+    }
+
+    override fun setSessionTime(s: UInt) {
+        super.setSessionTime(s)
+        breakTimeSeconds = s
     }
 
     override fun onTimerFinish() {
@@ -75,5 +82,20 @@ class BreakFragment : TimerFragment() {
         // check if break should be ended?
         // or just go ahead and end it anyway?
         endSession()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+            sharedData.sessionType?.toString()?.let { sessionId ->
+                it.edit().apply {
+                    timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                        putInt("breakTimeFor${sessionId}", (sessionTimeSeconds / 60u).toInt())
+                    }
+                    apply()
+                }
+            }
+        }
     }
 }

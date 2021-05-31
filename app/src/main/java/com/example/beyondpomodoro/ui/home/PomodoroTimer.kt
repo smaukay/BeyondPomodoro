@@ -7,28 +7,28 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.beyondpomodoro.R
 
+
+enum class State {
+    INACTIVE {
+        override fun nextState() = ACTIVE_RUNNING
+    },
+
+    ACTIVE_RUNNING {
+        override fun nextState() = ACTIVE_PAUSED
+    },
+
+    ACTIVE_PAUSED {
+        override fun nextState() = ACTIVE_RUNNING
+    },
+
+    COMPLETE {
+        override fun nextState() = INACTIVE
+    };
+
+    abstract fun nextState(): State
+}
+
 class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragment) {
-
-    enum class State {
-        INACTIVE {
-            override fun nextState() = ACTIVE_RUNNING
-        },
-
-        ACTIVE_RUNNING {
-            override fun nextState() = ACTIVE_PAUSED
-        },
-
-        ACTIVE_PAUSED {
-            override fun nextState() = ACTIVE_RUNNING
-        },
-
-        COMPLETE {
-            override fun nextState() = INACTIVE
-        };
-
-        abstract fun nextState(): State
-    }
-
     var state: State = State.INACTIVE
 
     var sessionTimeSecondsLeft: UInt = sessionTimeSeconds
@@ -54,7 +54,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
                         //TODO: check if this works (i.e. no mutable) when paused
                         val toast = Toast.makeText(
                             view.context,
-                            "The session is already active. You can end it if you like.",
+                            context.getString(R.string.session_already_active_message),
                             Toast.LENGTH_SHORT
                         )
                         toast.show()

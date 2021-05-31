@@ -137,6 +137,11 @@ open class HomeFragment : TimerFragment() {
         findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
     }
 
+    override fun setSessionTime(s: UInt) {
+        super.setSessionTime(s)
+        sessionTimeSeconds = s
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -154,13 +159,13 @@ open class HomeFragment : TimerFragment() {
         super.onViewCreated(view, savedInstanceState)
         val cls = this
 
-
         timer = PomodoroTimer(sessionTimeSeconds, view,this)
 
         setupVisualBlocks(view)
         homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
 
         // all existing tags
+        println("DEBUG: tags already found: ${homeViewModel.tags.size}")
         homeViewModel.tags.forEach {
             val chip = Chip(this.requireContext())
             chip.text = it.key
@@ -176,9 +181,6 @@ open class HomeFragment : TimerFragment() {
                     chip.chipBackgroundColor = ColorStateList.valueOf(prefs.getInt("tag_colour_${it.key}", 1))
                 }
             }
-
-            chip.chipBackgroundColor = it.value
-
             homeViewModel.chipGroup?.addView(chip)
         }
 
@@ -222,6 +224,8 @@ open class HomeFragment : TimerFragment() {
                                     }
                                 }
                             }
+                            homeViewModel.tags[tag] = tag
+                            println("DEBUG: added to tags: ${homeViewModel.tags.size}")
                             homeViewModel.chipGroup?.addView(chip)
                         }
                         else ->
@@ -238,8 +242,6 @@ open class HomeFragment : TimerFragment() {
                 }
             }
         }
-
-        timer = PomodoroTimer(30u, view,this)
     }
 
     private fun setupVisualBlocks(view: View) {
@@ -273,6 +275,56 @@ open class HomeFragment : TimerFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        // did user start this session?
+        // if so, then either the session is currrently paused or it's running
+        if(timer?.state == State.INACTIVE) {
+            return
+        }
+
+        // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
+        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+            val tags = homeViewModel.chipGroup?.children?.toList()?.sortedBy { c -> c.toString() }?.map { c ->
+                c.toString()
+            }?.reduceOrNull { acc, s -> "$acc,$s" }
+
+            var sessionId = if(tag != null) {
+                tags
+            } else {
+                ""
+            } + ";${(sessionTimeSeconds/60u)};5"
+
+            when(it.contains("sessionList")) {
+                true -> {
+                    it.getString("sessionList", "")?.split("<SESNAME>")?.let {
+                            sessionList ->
+                        if(sessionList.contains(sessionId)) {
+                            sharedData.sessionType?.value = sessionId
+                        } else {
+                            it.edit().apply {
+                                putString("sessionList", "${it.getString("sessionList", "")}<SESNAME>$sessionId")
+                                apply()
+                            }
+                        }
+                    }
+                }
+                false -> {
+                    it.edit().apply {
+                        putString("sessionList", "$sessionId")
+                        apply()
+                    }
+                }
+            }
+
+            it.edit().apply {
+                timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                    putInt("pomodoroTimeFor${sessionId}", (sessionTimeSeconds/ 60u).toInt())
+                }
+                putInt("breakTimeFor${sessionId}", 5)
+                putString("tagsFor${sessionId}", tags)
+                apply()
+            }
+        }
     }
 
     override fun updateVisualBlocks(millisUntilFinished: Long) {

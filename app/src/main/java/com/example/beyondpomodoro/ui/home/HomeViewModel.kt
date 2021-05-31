@@ -1,6 +1,5 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.content.res.ColorStateList
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.lifecycle.LiveData
@@ -21,7 +20,7 @@ open class HomeViewModel : ViewModel() {
     var imageButtonList: List<ImageView?>? = null
     var editTags: EditText? = null
     var chipGroup: ChipGroup? = null
-    var tags: MutableMap<String, ColorStateList> = mutableMapOf()
+    var tags: MutableMap<String, String> = mutableMapOf()
 
     // event variables
     var sessionStartTimeMillis: Long? = null

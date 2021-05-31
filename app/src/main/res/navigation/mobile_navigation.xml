@@ -28,6 +28,10 @@
         android:id="@+id/sessionInfoFragment"
         android:name="com.example.beyondpomodoro.SessionInfoFragment"
         android:label="fragment_session_info_list"
-        tools:layout="@layout/fragment_session_info_list" />
+        tools:layout="@layout/fragment_session_info_list" >
+        <action
+            android:id="@+id/action_sessionInfoFragment_to_pomodoroFragment"
+            app:destination="@id/pomodoroFragment" />
+    </fragment>
 
 </navigation>
