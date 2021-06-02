@@ -73,16 +73,20 @@ class SessionInfoFragment : Fragment() {
                         println("DEBUG: $sessionId, $onTime, $offTime")
                         title?.let {
                             tags?.let {
-                                SessionType(num.toUInt(), title, onTime, offTime, tags)
+                                SessionType(num.toUInt(), sessionId, title, onTime, offTime, tags)
                             }
                         }
-
                     }
 
-                    adapter = MySessionInfoRecyclerViewAdapter(
-                        SessionList(
-                        sessions
-                    ).items)
+                    adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions).items) {
+                        context.toast("${it.id}, ${it.title}")
+
+                        // save the title to sharedprefs
+                        prefs.edit().apply {
+                            putString(it.id, it.title)
+                            apply()
+                        }
+                    };
 
                 }
 

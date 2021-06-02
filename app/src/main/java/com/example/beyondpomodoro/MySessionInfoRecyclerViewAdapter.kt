@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.databinding.FragmentSessionInfoBinding
 import com.example.beyondpomodoro.sessiontype.SessionType
@@ -13,7 +14,8 @@ import com.example.beyondpomodoro.sessiontype.SessionType
  * TODO: Replace the implementation with code for your data type.
  */
 class MySessionInfoRecyclerViewAdapter(
-    private val values: List<SessionType>
+    private val values: List<SessionType>,
+    private val listener: (SessionType) -> Unit
 ) : RecyclerView.Adapter<MySessionInfoRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,6 +36,13 @@ class MySessionInfoRecyclerViewAdapter(
         holder.sessionInfoSessionTimeView.text = item.onTime.toString()
         holder.sessionInfoBreakTimeView.text = item.offTime.toString()
         holder.tagsTextView.text = item.tags
+
+        holder.itemView.setOnClickListener { listener(item) }
+        holder.sessionInfoTitleEditText.apply {
+            doOnTextChanged { text, start, before, count ->
+                item.title = text.toString()
+            }
+        }
     }
 
     override fun getItemCount(): Int = values.size

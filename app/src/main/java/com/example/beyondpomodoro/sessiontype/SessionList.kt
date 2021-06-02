@@ -31,17 +31,7 @@ class SessionList(sessions: List<SessionType?>) {
 
     private fun addItem(item: SessionType) {
         items.add(item)
-        itemMap[item.id] = item
-    }
-
-    private fun createSessionType(
-        position: Int,
-        title: String,
-        onTime: UInt,
-        offTime: UInt,
-        tags: String
-    ): SessionType {
-        return SessionType(position.toUInt(), title, onTime, offTime, tags)
+        itemMap[item.serial] = item
     }
 
     private fun makeDetails(position: Int): String {
@@ -58,12 +48,13 @@ class SessionList(sessions: List<SessionType?>) {
  * A placeholder item representing a piece of content.
  */
 data class SessionType(
-    val id: UInt,
-    val title: String,
+    val serial: UInt,
+    val id: String,
+    var title: String,
     val onTime: UInt,
     val offTime: UInt,
     val tags: String
 ) {
     override fun toString(): String =
-        "$id, $title, $onTime, $offTime. $tags"
+        "$serial, $title, $onTime, $offTime. $tags"
 }
