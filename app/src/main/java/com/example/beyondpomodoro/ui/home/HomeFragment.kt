@@ -37,6 +37,7 @@ class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
                 .setPositiveButton(R.string.end_session_save,
                     { dialog, id ->
                         // save session fragment
+                        caller.addToSessionList()
                         caller.saveSession()
                     })
                 .setNegativeButton(R.string.end_session_nosave,
@@ -276,6 +277,7 @@ open class HomeFragment : TimerFragment() {
         super.onDestroyView()
         _binding = null
 
+    fun addToSessionList() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
         if(timer?.state == State.INACTIVE) {
@@ -284,11 +286,12 @@ open class HomeFragment : TimerFragment() {
 
         // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            val tags = homeViewModel.chipGroup?.children?.toList()?.sortedBy { c -> c.toString() }?.map { c ->
-                c.toString()
-            }?.reduceOrNull { acc, s -> "$acc,$s" }
-
-            var sessionId = if(tag != null) {
+            val tags = homeViewModel.chipGroup?.children?.toList()
+                ?.map { c ->
+                    (c as Chip).text.toString()
+                }
+                ?.reduceOrNull { acc, s -> "$acc,$s" }
+            var sessionId = if(tags != null) {
                 tags
             } else {
                 ""
