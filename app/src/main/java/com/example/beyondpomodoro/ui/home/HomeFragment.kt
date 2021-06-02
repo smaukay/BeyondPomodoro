@@ -306,7 +306,7 @@ open class HomeFragment : TimerFragment() {
                         } else {
                             it.edit().apply {
                                 putString("sessionList", "${it.getString("sessionList", "")}<SESNAME>$sessionId")
-                                apply()
+                                commit()
                             }
                         }
                     }
@@ -314,7 +314,7 @@ open class HomeFragment : TimerFragment() {
                 false -> {
                     it.edit().apply {
                         putString("sessionList", "$sessionId")
-                        apply()
+                        commit()
                     }
                 }
             }
@@ -325,7 +325,7 @@ open class HomeFragment : TimerFragment() {
                 }
                 putInt("breakTimeFor${sessionId}", 5)
                 putString("tagsFor${sessionId}", tags)
-                apply()
+                commit()
             }
         }
     }
