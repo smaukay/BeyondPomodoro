@@ -170,10 +170,10 @@ open class HomeFragment : TimerFragment() {
             val chip = Chip(this.requireContext())
             chip.text = it.key
             chip.isCloseIconVisible = true
-            chip.setOnCloseIconClickListener {
+            chip.setOnCloseIconClickListener { view ->
                 // remove chip from chipgroup
                 homeViewModel.chipGroup?.removeView(chip)
-                homeViewModel.tags.remove(tag)
+                homeViewModel.tags.remove(it.key)
             }
 
             activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
