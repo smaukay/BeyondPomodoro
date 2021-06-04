@@ -16,7 +16,7 @@ open class HomeViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
-    var numBlocksShow: UInt = 9u
+    var numBlocksShow: Int = 9
     var imageButtonList: List<ImageView?>? = null
     var editTags: EditText? = null
     var chipGroup: ChipGroup? = null

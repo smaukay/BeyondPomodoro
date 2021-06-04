@@ -1,11 +1,7 @@
 package com.example.beyondpomodoro.ui.home
 
 import android.os.CountDownTimer
-import android.view.View
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
-import com.example.beyondpomodoro.R
+import androidx.lifecycle.MutableLiveData
 
 
 enum class State {
@@ -28,98 +24,45 @@ enum class State {
     abstract fun nextState(): State
 }
 
-class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragment) {
-    var state: State = State.INACTIVE
+class PomodoroTimer(sessionTimeSeconds: UInt) {
+    val state: MutableLiveData<State> by lazy {
+        MutableLiveData<State>(State.INACTIVE)
+    }
 
-    var sessionTimeSecondsLeft: UInt = sessionTimeSeconds
-    var sessionTimeSeconds: UInt = sessionTimeSeconds
-    lateinit var startButton: Button
-    lateinit var endButton: Button
-    lateinit var textViewSeconds: TextView
+    val sessionTimeSecondsLeft: MutableLiveData<UInt> by lazy {
+        MutableLiveData<UInt>(sessionTimeSeconds)
+    }
+
+    val sessionTimeSeconds: MutableLiveData<UInt> by lazy {
+        MutableLiveData<UInt>(sessionTimeSeconds)
+    }
+
     var countDownTimer: CountDownTimer? = null
-    private val fragment = fragment
-    private var view = view
 
-    init
-    {
-        val cls = this
-        textViewSeconds = view.findViewWithTag<TextView>("timerDisplay").apply {
-            text = convertMinutesToDisplayString()
-
-            // onclick open dialog to enter time
-            setOnClickListener {
-                when(state) {
-                    State.ACTIVE_PAUSED, State.ACTIVE_RUNNING ->
-                    {
-                        //TODO: check if this works (i.e. no mutable) when paused
-                        val toast = Toast.makeText(
-                            view.context,
-                            context.getString(R.string.session_already_active_message),
-                            Toast.LENGTH_SHORT
-                        )
-                        toast.show()
-                    }
-                    State.INACTIVE, State.COMPLETE -> {
-                        SetTimeDialogFragment(fragment).show(fragment.parentFragmentManager, "pick_session_time")
-                    }
-
-                }
-
-            }
-        }
-
-        endButton = view.findViewWithTag<Button>("endButton").apply {
-            this.setOnClickListener {
-                fragment.confirmEndSession()
-            }
-        }
-
-        startButton = view.findViewWithTag<Button>("startButton").apply {
-            this.setOnClickListener {
-                cls.nextState()
-            }
-        }
-    }
-    fun convertMinutesToDisplayString() : String {
-        return (sessionTimeSecondsLeft/60u).toString().padStart(2, '0') + ":" + (sessionTimeSecondsLeft%60u).toString().padStart(2, '0')
-    }
-
-    private fun nextState() {
-        when(state) {
+    fun nextState() {
+        when(state.value) {
             State.INACTIVE, State.ACTIVE_PAUSED -> {
-                countDownTimerCreate((sessionTimeSecondsLeft * 1000u).toLong())
+                sessionTimeSecondsLeft.value?.times(1000u)?.let { countDownTimerCreate(it.toLong()) }
                 countDownTimer?.start()
-                textViewSeconds.text = convertMinutesToDisplayString()
-
-                startButton.text = view.context.getString(R.string.pomodoro_pause_session_button)
-                endButton.visibility = View.VISIBLE
-                fragment.startSession()
             }
 
             State.ACTIVE_RUNNING -> {
                 countDownTimer?.cancel()
-                startButton.text = view.context.getString(R.string.pomodoro_resume_session_button)
             }
 
             State.COMPLETE -> {
-                // this is now a save session button
-                fragment.saveSession()
             }
         }
-        state = state.nextState()
-    }
-
-    fun buttonsReset() {
-        // endbutton hide
-        endButton.visibility = View.INVISIBLE
-
-        // start button
-        startButton.text = view.context.getString(R.string.pomodoro_start_session_button)
+        state.apply {
+            value = value?.nextState()
+        }
     }
 
     fun pomodoroReset() {
         // set pomodoro completeness as false
-        state = State.INACTIVE
+        state.apply {
+            value = State.INACTIVE
+        }
     }
 
     fun clockReset() {
@@ -128,33 +71,42 @@ class PomodoroTimer(sessionTimeSeconds: UInt, view: View, fragment: TimerFragmen
         countDownTimer?.cancel()
 
         // set timer back to full
-        sessionTimeSecondsLeft = sessionTimeSeconds
-        // set text back to timer
-        textViewSeconds.text = convertMinutesToDisplayString()
+        sessionTimeSecondsLeft.apply {
+            value = sessionTimeSeconds.value
+        }
     }
 
     private fun updateVisualBlocks(millisUntilFinished: Long) {
-        sessionTimeSecondsLeft = (millisUntilFinished.toUInt())/1000u
-        textViewSeconds.text = convertMinutesToDisplayString()
+        sessionTimeSecondsLeft.apply {
+            value = (millisUntilFinished.toUInt())/1000u
+        }
+    }
+
+    fun setSessionTime(s: UInt) {
+        sessionTimeSeconds.apply {
+            value = s
+        }
+
+        sessionTimeSecondsLeft.apply {
+            value = s
+        }
     }
 
     private fun onTimerFinish() {
-        startButton.text = view.context.getString(R.string.pomodoro_save_session_button)
-        state = State.COMPLETE
-        // hide end button
-        endButton.visibility = View.INVISIBLE
+        state.apply {
+            value = State.COMPLETE
+        }
     }
 
     private fun countDownTimerCreate(millisLeft: Long) {
         countDownTimer = object: CountDownTimer(millisLeft, 1000) {
             override fun onTick(millisUntilFinished: Long) {
+                println("DEBUG: still ticking... ")
                 updateVisualBlocks(millisUntilFinished)
-                fragment.updateVisualBlocks(millisUntilFinished)
             }
 
             override fun onFinish() {
                 onTimerFinish()
-                fragment.onTimerFinish()
             }
         }
     }

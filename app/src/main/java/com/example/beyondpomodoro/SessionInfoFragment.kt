@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.sessiontype.SessionList
 import com.example.beyondpomodoro.sessiontype.SessionType
 
+
 /**
  * A fragment representing a list of Items.
  */
@@ -70,7 +71,7 @@ class SessionInfoFragment : Fragment() {
                         val onTime = prefs.getInt("pomodoroTimeFor$sessionId", 25).toUInt()
                         val offTime = prefs.getInt("breakTimeFor$sessionId", 5).toUInt()
                         val tags = prefs.getString("tagsFor$sessionId", "")
-                        println("DEBUG: $sessionId, $onTime, $offTime")
+                        println("DEBUG: $sessionId, $onTime, $offTime, $tags")
                         title?.let {
                             tags?.let {
                                 SessionType(num.toUInt(), sessionId, title, onTime, offTime, tags)

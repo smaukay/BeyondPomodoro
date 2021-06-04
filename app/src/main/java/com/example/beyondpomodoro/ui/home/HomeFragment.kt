@@ -1,7 +1,5 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -17,7 +15,6 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
@@ -26,56 +23,6 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import java.util.*
 import kotlin.math.ceil
-
-class EndSessionDialogFragment(caller: HomeFragment) : DialogFragment() {
-    private val caller: HomeFragment = caller
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity?.let {
-            // Use the Builder class for convenient dialog construction
-            val builder = AlertDialog.Builder(it)
-            builder.setMessage(R.string.dialog_end_session)
-                .setPositiveButton(R.string.end_session_save,
-                    { dialog, id ->
-                        // save session fragment
-                        caller.addToSessionList()
-                        caller.saveSession()
-                    })
-                .setNegativeButton(R.string.end_session_nosave,
-                    { dialog, id ->
-                        // no save :(
-                        caller.endSession()
-                    })
-            // Create the AlertDialog object and return it
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
-    }
-}
-
-class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
-    private val caller: TimerFragment = caller
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val minutesEditText = view.findViewById<EditText>(R.id.editTextSessionMinutes)
-        view.findViewById<Button>(R.id.set_time_button).apply {
-
-            setOnClickListener {
-                when(minutesEditText.text.isNotEmpty()) {
-                    true -> caller.setSessionTime(minutesEditText.text.toString().toUInt() * 60u)
-                }
-                dismiss()
-            }
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.pick_sesstion_time, container, false)
-    }
-}
 
 open class HomeFragment : TimerFragment() {
 
@@ -125,10 +72,7 @@ open class HomeFragment : TimerFragment() {
     }
 
     override fun endSession() {
-
-        timer?.clockReset()
-        timer?.pomodoroReset()
-        timer?.buttonsReset()
+        super.endSession()
 
         // show all visual image blocks
         showAllVisualBlocks()
@@ -150,7 +94,7 @@ open class HomeFragment : TimerFragment() {
     ): View? {
         homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
-
+        super.createViewModel()
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         return binding.root
@@ -158,13 +102,17 @@ open class HomeFragment : TimerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val cls = this
 
-        timer = PomodoroTimer(sessionTimeSeconds, view,this)
-
+        timerViewModel.title = "Pomodoro Running"
+        timerViewModel.type = "Session"
         setupVisualBlocks(view)
+        updateVisualBlocks(sessionTimeSeconds)
+
         homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
 
+        println("DEBUG: creating view: ${homeViewModel.tags}")
         // all existing tags
         println("DEBUG: tags already found: ${homeViewModel.tags.size}")
         homeViewModel.tags.forEach {
@@ -277,12 +225,18 @@ open class HomeFragment : TimerFragment() {
         super.onDestroyView()
         _binding = null
 
+        println("DEBUG: removing view ${homeViewModel.tags}")
+    }
+
     fun addToSessionList() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
-        if(timer?.state == State.INACTIVE) {
+        if(timerViewModel.timer?.state?.value == State.INACTIVE) {
+            println("DEBUG: not saving")
             return
         }
+
+        println("DEBUG: adding to session list")
 
         // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
@@ -291,6 +245,7 @@ open class HomeFragment : TimerFragment() {
                     (c as Chip).text.toString()
                 }
                 ?.reduceOrNull { acc, s -> "$acc,$s" }
+            println("DEBUG: tags, $tags")
             var sessionId = if(tags != null) {
                 tags
             } else {
@@ -320,8 +275,8 @@ open class HomeFragment : TimerFragment() {
             }
 
             it.edit().apply {
-                timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
-                    putInt("pomodoroTimeFor${sessionId}", (sessionTimeSeconds/ 60u).toInt())
+                timerViewModel.timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                    (sessionTimeSeconds.value?.div(60u))?.let { it1 -> putInt("pomodoroTimeFor${sessionId}", it1.toInt()) }
                 }
                 putInt("breakTimeFor${sessionId}", 5)
                 putString("tagsFor${sessionId}", tags)
@@ -330,15 +285,26 @@ open class HomeFragment : TimerFragment() {
         }
     }
 
-    override fun updateVisualBlocks(millisUntilFinished: Long) {
-        super.updateVisualBlocks(millisUntilFinished)
+    override fun updateVisualBlocks(secondsUntilFinished: UInt) {
+        super.updateVisualBlocks(secondsUntilFinished)
 
+        println("DEBUG: calling update visual blocks with $secondsUntilFinished")
         // check if any visualblocks to be disappeared?
-        val numBlocksShow = ceil(((millisUntilFinished.toFloat() / 1000f) / (timer!!.sessionTimeSeconds.toFloat()) * 9f)).toUInt()
+
+        val numBlocksShow = timerViewModel.timer?.let {
+            it.sessionTimeSeconds.value?.let { value ->
+                val res = ceil((secondsUntilFinished.toDouble()/value.toDouble()) * 9f).toInt()
+                println("DEBUG: showing $res blocks since value is $value")
+                res
+            }
+        }?: run {
+            0
+        }
+
         if(homeViewModel.numBlocksShow != numBlocksShow) {
             // number of blocks to show changed
             homeViewModel.imageButtonList?.let { it ->
-                it.subList(numBlocksShow.toInt(), 9).forEach {
+                it.subList(numBlocksShow, 9).forEach {
                     it?.visibility = INVISIBLE
                 }
                 homeViewModel.numBlocksShow = numBlocksShow
@@ -354,6 +320,7 @@ open class HomeFragment : TimerFragment() {
     }
 
     override fun startSession() {
+        super.startSession()
         homeViewModel.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
     }
 

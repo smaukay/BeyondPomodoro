@@ -1,25 +1,32 @@
 package com.example.beyondpomodoro
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.beyondpomodoro.databinding.ActivityMainBinding
+import com.example.beyondpomodoro.ui.home.State
+import com.example.beyondpomodoro.ui.home.TimerViewModel
+import com.example.beyondpomodoro.ui.home.endNotification
+import com.example.beyondpomodoro.ui.home.persistentTimedNotification
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    protected lateinit var timerViewModel: TimerViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +65,38 @@ class MainActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(persistentChannel)
         }
 
+        // notification based on viewmodel changes
+        timerViewModel = ViewModelProvider(this).get(TimerViewModel::class.java)
+
+        timerViewModel.active.observe(this, Observer<Boolean> {
+            when(it) {
+                false -> {}
+                true -> {
+                    timerViewModel.timer?.sessionTimeSecondsLeft?.observe(this, Observer<UInt> {
+                        println("DEBUG: observer activated")
+                        // update notification
+                        persistentTimedNotification(this, it, timerViewModel.title.orEmpty())
+                    })
+
+                    timerViewModel.timer?.state?.observe(this, Observer<State> {
+                        when(it) {
+                            State.COMPLETE -> {
+                                with(NotificationManagerCompat.from(this)) {
+                                    cancelAll()
+                                }
+
+                                println("DEBUG: Notifying")
+                                endNotification(this, timerViewModel.title.orEmpty(), timerViewModel.type.orEmpty())
+                            }
+
+                            else -> {
+
+                            }
+                        }
+                    })
+                }
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

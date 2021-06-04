@@ -25,6 +25,7 @@ class BreakFragment : TimerFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        super.createViewModel()
         return inflater.inflate(R.layout.break_fragment, container, false)
     }
 
@@ -35,7 +36,8 @@ class BreakFragment : TimerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        timer = PomodoroTimer(breakTimeSeconds, view,this)
+        super.addButtons()
+        timerViewModel.timer?.setSessionTime(breakTimeSeconds)
 
         view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
@@ -57,7 +59,7 @@ class BreakFragment : TimerFragment() {
         )
         toast.show()
 
-        timer?.startButton?.text = getString(R.string.pomodoro_break_end)
+        startButton.text = getString(R.string.pomodoro_break_end)
     }
 
     fun backToPomodoro () {
@@ -71,9 +73,9 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
-        timer?.clockReset()
-        timer?.pomodoroReset()
-        timer?.buttonsReset()
+        timerViewModel.timer?.clockReset()
+        timerViewModel.timer?.pomodoroReset()
+        super.buttonsReset()
 
         backToPomodoro()
     }
@@ -90,8 +92,10 @@ class BreakFragment : TimerFragment() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             sharedData.sessionType?.toString()?.let { sessionId ->
                 it.edit().apply {
-                    timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
-                        putInt("breakTimeFor${sessionId}", (sessionTimeSeconds / 60u).toInt())
+                    timerViewModel.timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                        sessionTimeSeconds.value?.let { value ->
+                            putInt("breakTimeFor${sessionId}", (value/60u).toInt())
+                        }
                     }
                     apply()
                 }
