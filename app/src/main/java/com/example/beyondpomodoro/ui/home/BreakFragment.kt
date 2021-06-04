@@ -37,7 +37,7 @@ class BreakFragment : TimerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         super.addButtons()
-        timerViewModel.timer?.setSessionTime(breakTimeSeconds)
+        timerViewModel.timer.setSessionTime(breakTimeSeconds)
 
         view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
@@ -73,8 +73,8 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
-        timerViewModel.timer?.clockReset()
-        timerViewModel.timer?.pomodoroReset()
+        timerViewModel.timer.clockReset()
+        timerViewModel.timer.pomodoroReset()
         super.buttonsReset()
 
         backToPomodoro()
@@ -92,7 +92,7 @@ class BreakFragment : TimerFragment() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             sharedData.sessionType?.toString()?.let { sessionId ->
                 it.edit().apply {
-                    timerViewModel.timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                    timerViewModel.timer.sessionTimeSeconds.let { sessionTimeSeconds ->
                         sessionTimeSeconds.value?.let { value ->
                             putInt("breakTimeFor${sessionId}", (value/60u).toInt())
                         }

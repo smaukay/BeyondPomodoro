@@ -53,9 +53,8 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
             State.COMPLETE -> {
             }
         }
-        state.apply {
-            value = value?.nextState()
-        }
+        state.value = state.value?.nextState()
+        println("DEBUG: state changed to ${state.value}")
     }
 
     fun pomodoroReset() {

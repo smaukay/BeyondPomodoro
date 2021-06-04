@@ -164,7 +164,7 @@ open class HomeFragment : TimerFragment() {
                                     context?.let {
                                         ContextCompat.getColor(it, tagColours.random() ).let { colourSelect ->
                                             // save this colour for this tag
-                                            with(prefs?.edit()) {
+                                            with(prefs.edit()) {
                                                 putInt("tag_colour_${tag}", colourSelect)
                                                 apply()
                                             }
@@ -231,7 +231,7 @@ open class HomeFragment : TimerFragment() {
     fun addToSessionList() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
-        if(timerViewModel.timer?.state?.value == State.INACTIVE) {
+        if(timerViewModel.timer.state.value == State.INACTIVE) {
             println("DEBUG: not saving")
             return
         }
@@ -275,7 +275,7 @@ open class HomeFragment : TimerFragment() {
             }
 
             it.edit().apply {
-                timerViewModel.timer?.sessionTimeSeconds?.let { sessionTimeSeconds ->
+                timerViewModel.timer.sessionTimeSeconds.let { sessionTimeSeconds ->
                     (sessionTimeSeconds.value?.div(60u))?.let { it1 -> putInt("pomodoroTimeFor${sessionId}", it1.toInt()) }
                 }
                 putInt("breakTimeFor${sessionId}", 5)
@@ -291,13 +291,13 @@ open class HomeFragment : TimerFragment() {
         println("DEBUG: calling update visual blocks with $secondsUntilFinished")
         // check if any visualblocks to be disappeared?
 
-        val numBlocksShow = timerViewModel.timer?.let {
+        val numBlocksShow = timerViewModel.timer.let {
             it.sessionTimeSeconds.value?.let { value ->
                 val res = ceil((secondsUntilFinished.toDouble()/value.toDouble()) * 9f).toInt()
                 println("DEBUG: showing $res blocks since value is $value")
                 res
             }
-        }?: run {
+        } ?: run {
             0
         }
 
