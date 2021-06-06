@@ -38,6 +38,14 @@ open class HomeFragment : TimerFragment() {
 
     // tag colours in an array
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
+
+    override fun afterServiceConnected() {
+        super.afterServiceConnected()
+        timer.setSessionTime(sessionTimeSeconds)
+        view?.let { setupVisualBlocks(it) }
+        updateVisualBlocks(sessionTimeSeconds)
+    }
+
     override fun saveSession() {
         val toast = Toast.makeText(
             view?.context,
@@ -94,7 +102,6 @@ open class HomeFragment : TimerFragment() {
     ): View? {
         homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
-        super.createViewModel()
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
         return binding.root
@@ -103,13 +110,8 @@ open class HomeFragment : TimerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val cls = this
-
-        timerViewModel.title = "Pomodoro Running"
-        timerViewModel.type = "Session"
-        setupVisualBlocks(view)
-        updateVisualBlocks(sessionTimeSeconds)
-
+        // timerViewModel.title = "Pomodoro Running"
+        // timerViewModel.type = "Session"
         homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
 
         println("DEBUG: creating view: ${homeViewModel.tags}")
@@ -231,7 +233,7 @@ open class HomeFragment : TimerFragment() {
     fun addToSessionList() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
-        if(timerViewModel.timer.state.value == State.INACTIVE) {
+        if(timer.state.value == State.INACTIVE) {
             println("DEBUG: not saving")
             return
         }
@@ -275,7 +277,7 @@ open class HomeFragment : TimerFragment() {
             }
 
             it.edit().apply {
-                timerViewModel.timer.sessionTimeSeconds.let { sessionTimeSeconds ->
+                timer.sessionTimeSeconds.let { sessionTimeSeconds ->
                     (sessionTimeSeconds.value?.div(60u))?.let { it1 -> putInt("pomodoroTimeFor${sessionId}", it1.toInt()) }
                 }
                 putInt("breakTimeFor${sessionId}", 5)
@@ -291,12 +293,10 @@ open class HomeFragment : TimerFragment() {
         println("DEBUG: calling update visual blocks with $secondsUntilFinished")
         // check if any visualblocks to be disappeared?
 
-        val numBlocksShow = timerViewModel.timer.let {
-            it.sessionTimeSeconds.value?.let { value ->
-                val res = ceil((secondsUntilFinished.toDouble()/value.toDouble()) * 9f).toInt()
-                println("DEBUG: showing $res blocks since value is $value")
-                res
-            }
+        val numBlocksShow = timer.sessionTimeSeconds.value?.let { value ->
+            val res = ceil((secondsUntilFinished.toDouble()/value.toDouble()) * 9f).toInt()
+            println("DEBUG: showing $res blocks since value is $value")
+            res
         } ?: run {
             0
         }

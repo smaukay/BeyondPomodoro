@@ -1,7 +1,11 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +14,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import com.example.beyondpomodoro.R
 
 open class TimerFragment : Fragment() {
@@ -21,13 +24,47 @@ open class TimerFragment : Fragment() {
     lateinit var startButton: Button
     lateinit var endButton: Button
     lateinit var textViewSeconds: TextView
+    protected lateinit var timer: PomodoroTimer
     protected open var notificationTitle: String = ""
+
+    protected val connection = object: ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as TimerService.LocalBinder
+            timer = binder.timer
+            afterServiceConnected()
+            println("DEBUG: service connected")
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            println("DEBUG: service disconnected")
+        }
+    }
 
     protected val sharedData: SharedViewModel by activityViewModels()
     companion object {
     }
 
-    protected lateinit var timerViewModel: TimerViewModel
+    override fun onDestroyView() {
+        super.onDestroyView()
+        context?.unbindService(connection)
+    }
+
+    open fun afterServiceConnected() {
+        addButtons()
+
+        /*
+         * the timer state may be active or inactive
+         * regardless we only care about updating the view elements
+         * so we dont have to do anything special
+         * the observer takes care of updating the visual elements
+         */
+        timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
+            textViewSeconds.text = convertMinutesToDisplayString(it)
+
+            // update visuals
+            updateVisualBlocks(it)
+        })
+    }
 
     open fun startSession() {
         println("DEBUG: starting Session")
@@ -36,14 +73,11 @@ open class TimerFragment : Fragment() {
 
     open fun setSessionTime(s: UInt) {
         println("DEBUG: setting session time to $s")
-        timerViewModel.timer.setSessionTime(s)
+        timer.setSessionTime(s)
     }
 
-    open fun createViewModel() {
-        activity?.let {
-            timerViewModel = ViewModelProvider(it).get(TimerViewModel::class.java)
-        }
-        println("DEBUG: timerviewmodel: $timerViewModel")
+    override fun onStart() {
+        super.onStart()
     }
 
     open fun addButtons() {
@@ -55,7 +89,7 @@ open class TimerFragment : Fragment() {
 
             // onclick open dialog to enter time
             setOnClickListener {
-                when(timerViewModel.timer.state.value) {
+                when(timer.state.value) {
                     State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
                         //TODO: check if this works (i.e. no mutable) when paused
                         val toast = Toast.makeText(
@@ -90,7 +124,7 @@ open class TimerFragment : Fragment() {
        }
 
         // when timer state changes
-        timerViewModel.timer.state.observe(viewLifecycleOwner, {
+        timer.state.observe(viewLifecycleOwner, {
             when(it) {
                 State.COMPLETE -> {
                     // hide end button
@@ -124,14 +158,14 @@ open class TimerFragment : Fragment() {
         })
 
         // when user changes session time
-        timerViewModel.timer.sessionTimeSeconds.observe(viewLifecycleOwner, {
+        timer.sessionTimeSeconds.observe(viewLifecycleOwner, {
             println("DEBUG: timer set to $it")
             textViewSeconds.apply {
                 text = convertMinutesToDisplayString(it)
             }
         })
 
-        timerViewModel.timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
+        timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
             textViewSeconds.apply {
                 text = convertMinutesToDisplayString(it)
             }
@@ -149,15 +183,14 @@ open class TimerFragment : Fragment() {
     }
 
     open fun nextState() {
-        println("DEBUG: state ${timerViewModel.timer.state.value}, ${startButton.text}")
-        timerViewModel.timer.nextState()
+        println("DEBUG: state ${timer.state.value}, ${startButton.text}")
+        timer.nextState()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        createViewModel()
         return inflater.inflate(R.layout.timer_fragment, container, false)
     }
 
@@ -173,7 +206,10 @@ open class TimerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        timerViewModel.active.value = true
+
+        Intent(context, TimerService::class.java).also { intent ->
+            context?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
 
         sharedData.sessionType?.let { sessionType ->
             activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
@@ -182,21 +218,6 @@ open class TimerFragment : Fragment() {
             }
         }
 
-        /*
-         * the timer state may be active or inactive
-         * regardless we only care about updating the view elements
-         * so we dont have to do anything special
-         * the observer takes care of updating the visual elements
-         */
-
-        timerViewModel.timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
-            textViewSeconds.text = convertMinutesToDisplayString(it)
-
-            // update visuals
-            updateVisualBlocks(it)
-        })
-
-        addButtons()
     }
 
     fun buttonsReset() {
@@ -214,9 +235,9 @@ open class TimerFragment : Fragment() {
     }
 
     open fun endSession() {
-        timerViewModel.timer.clockReset()
+        timer.clockReset()
         textViewSeconds.text = convertMinutesToDisplayString(sessionTimeSeconds)
-        timerViewModel.timer.pomodoroReset()
+        timer.pomodoroReset()
 
         endButton.visibility = View.INVISIBLE
         startButton.text = context?.getString(R.string.pomodoro_start_session_button)
@@ -227,12 +248,6 @@ open class TimerFragment : Fragment() {
 
     open fun updateVisualBlocks(secondsUntilFinished: UInt) {
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        timerViewModel.active.value = false
-    }
-
 }
 
 fun convertMinutesToDisplayString(sessionTimeSecondsLeft: UInt) : String {

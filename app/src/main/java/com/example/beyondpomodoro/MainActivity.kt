@@ -2,6 +2,7 @@ package com.example.beyondpomodoro
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -16,10 +17,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.beyondpomodoro.databinding.ActivityMainBinding
-import com.example.beyondpomodoro.ui.home.State
-import com.example.beyondpomodoro.ui.home.TimerViewModel
-import com.example.beyondpomodoro.ui.home.endNotification
-import com.example.beyondpomodoro.ui.home.persistentTimedNotification
+import com.example.beyondpomodoro.ui.home.*
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -30,6 +28,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // create timer service
+        Intent(this, TimerService::class.java).also { intent ->
+            startService(intent)
+        }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -68,32 +71,28 @@ class MainActivity : AppCompatActivity() {
         // notification based on viewmodel changes
         timerViewModel = ViewModelProvider(this).get(TimerViewModel::class.java)
 
-        timerViewModel.active.observe(this, Observer<Boolean> {
+        timerViewModel.timer.state.observe(this, Observer<State> {
             when(it) {
-                false -> {}
-                true -> {
-                    timerViewModel.timer?.sessionTimeSecondsLeft?.observe(this, Observer<UInt> {
+                State.COMPLETE -> {
+                    with(NotificationManagerCompat.from(this)) {
+                        cancelAll()
+                    }
+                    // remove observers
+                    timerViewModel.timer.sessionTimeSecondsLeft.removeObservers(this)
+
+                    println("DEBUG: Notifying")
+                    endNotification(this, timerViewModel.title.orEmpty(), timerViewModel.type.orEmpty())
+                }
+                State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
+                    // attach an observer
+                    timerViewModel.timer.sessionTimeSecondsLeft.observe(this, Observer<UInt> {
                         println("DEBUG: observer activated")
                         // update notification
                         persistentTimedNotification(this, it, timerViewModel.title.orEmpty())
                     })
-
-                    timerViewModel.timer?.state?.observe(this, Observer<State> {
-                        when(it) {
-                            State.COMPLETE -> {
-                                with(NotificationManagerCompat.from(this)) {
-                                    cancelAll()
-                                }
-
-                                println("DEBUG: Notifying")
-                                endNotification(this, timerViewModel.title.orEmpty(), timerViewModel.type.orEmpty())
-                            }
-
-                            else -> {
-
-                            }
-                        }
-                    })
+                }
+                State.INACTIVE -> {
+                    // no notification needed
                 }
             }
         })

@@ -25,7 +25,6 @@ class BreakFragment : TimerFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        super.createViewModel()
         return inflater.inflate(R.layout.break_fragment, container, false)
     }
 
@@ -34,10 +33,14 @@ class BreakFragment : TimerFragment() {
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
     }
 
+    override fun afterServiceConnected() {
+        super.afterServiceConnected()
+        super.addButtons()
+        timer.setSessionTime(breakTimeSeconds)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        super.addButtons()
-        timerViewModel.timer.setSessionTime(breakTimeSeconds)
 
         view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
@@ -63,8 +66,6 @@ class BreakFragment : TimerFragment() {
     }
 
     fun backToPomodoro () {
-        // TODO:
-        // replace the fragment with a HomeFragment
         findNavController().navigateUp()
     }
 
@@ -73,8 +74,8 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
-        timerViewModel.timer.clockReset()
-        timerViewModel.timer.pomodoroReset()
+        timer.clockReset()
+        timer.pomodoroReset()
         super.buttonsReset()
 
         backToPomodoro()
@@ -92,7 +93,7 @@ class BreakFragment : TimerFragment() {
         activity?.getPreferences(Context.MODE_PRIVATE)?.let {
             sharedData.sessionType?.toString()?.let { sessionId ->
                 it.edit().apply {
-                    timerViewModel.timer.sessionTimeSeconds.let { sessionTimeSeconds ->
+                    timer.sessionTimeSeconds.let { sessionTimeSeconds ->
                         sessionTimeSeconds.value?.let { value ->
                             putInt("breakTimeFor${sessionId}", (value/60u).toInt())
                         }
