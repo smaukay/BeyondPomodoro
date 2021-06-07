@@ -7,17 +7,15 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationManagerCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.beyondpomodoro.databinding.ActivityMainBinding
-import com.example.beyondpomodoro.ui.home.*
+import com.example.beyondpomodoro.ui.home.TimerService
+import com.example.beyondpomodoro.ui.home.TimerViewModel
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -68,34 +66,7 @@ class MainActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(persistentChannel)
         }
 
-        // notification based on viewmodel changes
-        timerViewModel = ViewModelProvider(this).get(TimerViewModel::class.java)
 
-        timerViewModel.timer.state.observe(this, Observer<State> {
-            when(it) {
-                State.COMPLETE -> {
-                    with(NotificationManagerCompat.from(this)) {
-                        cancelAll()
-                    }
-                    // remove observers
-                    timerViewModel.timer.sessionTimeSecondsLeft.removeObservers(this)
-
-                    println("DEBUG: Notifying")
-                    endNotification(this, timerViewModel.title.orEmpty(), timerViewModel.type.orEmpty())
-                }
-                State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
-                    // attach an observer
-                    timerViewModel.timer.sessionTimeSecondsLeft.observe(this, Observer<UInt> {
-                        println("DEBUG: observer activated")
-                        // update notification
-                        persistentTimedNotification(this, it, timerViewModel.title.orEmpty())
-                    })
-                }
-                State.INACTIVE -> {
-                    // no notification needed
-                }
-            }
-        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
