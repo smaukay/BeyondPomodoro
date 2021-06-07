@@ -25,12 +25,20 @@ open class TimerFragment : Fragment() {
     lateinit var endButton: Button
     lateinit var textViewSeconds: TextView
     protected lateinit var timer: PomodoroTimer
+    protected lateinit var title: (String) -> Unit
+    protected lateinit var type: (String) -> Unit
     protected open var notificationTitle: String = ""
 
     protected val connection = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as TimerService.LocalBinder
             timer = binder.timer
+            title = {
+                binder.title(it)
+            }
+            type = {
+                binder.type(it)
+            }
             afterServiceConnected()
             println("DEBUG: service connected")
         }

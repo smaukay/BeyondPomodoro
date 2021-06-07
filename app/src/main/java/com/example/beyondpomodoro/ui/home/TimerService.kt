@@ -10,8 +10,8 @@ import androidx.lifecycle.Observer
 class TimerService : LifecycleService() {
 
     var _timer: PomodoroTimer = PomodoroTimer(1500u)
-    var title = ""
-    var type = ""
+    var _title = ""
+    var _type = ""
     private val binder = LocalBinder()
 
     override fun onCreate() {
@@ -27,14 +27,14 @@ class TimerService : LifecycleService() {
                     _timer.sessionTimeSecondsLeft.removeObservers(this)
 
                     println("DEBUG: Notifying")
-                    endNotification(this, title.orEmpty(), type.orEmpty())
+                    endNotification(this, _title, _type)
                 }
                 State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
                     // attach an observer
                     _timer.sessionTimeSecondsLeft.observe(this, Observer<UInt> {
                         println("DEBUG: observer activated")
                         // update notification
-                        persistentTimedNotification(this, it, title.orEmpty())
+                        persistentTimedNotification(this, it, _title)
                     })
                 }
                 State.INACTIVE -> {
@@ -63,8 +63,20 @@ class TimerService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         println("DEBUG: service destroyed")
+        with(NotificationManagerCompat.from(this)) {
+            cancelAll()
+        }
     }
+
     inner class LocalBinder: Binder() {
         val timer = _timer
+
+        fun title(s: String) {
+            _title = s
+        }
+
+        fun type(s: String) {
+            _type = s
+        }
     }
 }

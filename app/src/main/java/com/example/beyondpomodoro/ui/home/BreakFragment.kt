@@ -36,6 +36,8 @@ class BreakFragment : TimerFragment() {
     override fun afterServiceConnected() {
         super.afterServiceConnected()
         super.addButtons()
+        title("Break time. Stretch. Relax. Hydrate.")
+        type("Break")
         timer.setSessionTime(breakTimeSeconds)
     }
 

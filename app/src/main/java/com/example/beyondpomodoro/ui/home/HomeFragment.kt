@@ -41,6 +41,8 @@ open class HomeFragment : TimerFragment() {
 
     override fun afterServiceConnected() {
         super.afterServiceConnected()
+        title("Session running")
+        type("Pomodoro")
         timer.setSessionTime(sessionTimeSeconds)
         view?.let { setupVisualBlocks(it) }
         updateVisualBlocks(sessionTimeSeconds)
