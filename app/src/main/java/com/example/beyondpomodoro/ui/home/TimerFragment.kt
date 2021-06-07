@@ -12,22 +12,18 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
+import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
-import com.example.beyondpomodoro.sessiontype.Session
 import com.example.beyondpomodoro.sessiontype.SessionDao
-import com.example.beyondpomodoro.sessiontype.SessionDatabase
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
 
 open class TimerFragment : Fragment() {
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
+    protected var sessionId: Int? = null
 
     lateinit var startButton: Button
     lateinit var endButton: Button
@@ -63,38 +59,23 @@ open class TimerFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         context?.unbindService(connection)
-
-        // get tags
-        val tags = view?.let {
-            it.findViewById<ChipGroup>(R.id.chipGroup).children.toList().map { e ->
-                (e as Chip).text.toString()
-            }
-        }?: run {
-            listOf<String>()
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            // add a new session to database
-            sessionDao?.addSession(
-                Session(sessionTimeSeconds.toInt(),
-                    300,
-                    System.currentTimeMillis(),
-                    tags,
-                    1
-                )
-            )
-        }
     }
 
     open fun afterServiceConnected() {
         // fetch most recent session
         val cls = this
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             sessionDao?.getLatestSession()?.apply {
                 cls.sessionTimeSeconds = this.sessionTime?.toUInt() ?: run { 1500u }
+                cls.breakTimeSeconds = this.breakTime?.toUInt() ?: run { 300u }
+                cls.sessionId = this.sid
             }
 
+            println("DEBUG: sid found: ${cls.sessionId}")
+            println("DEBUG: timer value was ${cls.sessionTimeSeconds}")
+
             addButtons()
+
             /*
              * the timer state may be active or inactive
              * regardless we only care about updating the view elements
@@ -120,16 +101,12 @@ open class TimerFragment : Fragment() {
         timer.setSessionTime(s)
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     open fun addButtons() {
         println("DEBUG: adding buttons")
         val fragment = this
         view?.findViewWithTag<TextView>("timerDisplay")?.apply {
             println("DEBUG: textview")
-            text = convertMinutesToDisplayString(sessionTimeSeconds)
+            text = timer.sessionTimeSeconds.value?.let { convertMinutesToDisplayString(it) }
 
             // onclick open dialog to enter time
             setOnClickListener {
@@ -231,6 +208,18 @@ open class TimerFragment : Fragment() {
         timer.nextState()
     }
 
+    open fun fetchDao() {
+        val db = (activity as MainActivity).db
+        println("DEBUG: db: $db")
+        sessionDao = db.sessionDao()
+    }
+
+    open fun bindService() {
+        Intent(context, TimerService::class.java).also { intent ->
+            context?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -240,16 +229,6 @@ open class TimerFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-        // create database instance
-        val db = context?.let {
-            Room.databaseBuilder(
-                it,
-                SessionDatabase::class.java, "session-types"
-            ).build()
-        }
-
-        sessionDao = db?.sessionDao()
 
         // get the last activity type on activity creation and store in sharedData
         activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
@@ -262,17 +241,8 @@ open class TimerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Intent(context, TimerService::class.java).also { intent ->
-            context?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-
-        sharedData.sessionType?.let { sessionType ->
-            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                sessionTimeSeconds = prefs.getInt("pomodoroTimeFor$sessionType", 25).toUInt() * 60u
-                breakTimeSeconds = prefs.getInt("breakTimeFor$sessionType", 5).toUInt() * 60u
-            }
-        }
-
+        fetchDao()
+        bindService()
     }
 
     fun buttonsReset() {

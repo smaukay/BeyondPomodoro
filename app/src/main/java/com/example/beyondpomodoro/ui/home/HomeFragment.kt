@@ -16,11 +16,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
+import com.example.beyondpomodoro.sessiontype.Pomodoro
+import com.example.beyondpomodoro.sessiontype.Session
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.ceil
 
@@ -36,11 +40,11 @@ open class HomeFragment : TimerFragment() {
     // tag colours in an array
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
 
-    override fun afterServiceConnected() {
-        super.afterServiceConnected()
+    override fun addButtons() {
         title("Session running")
         type("Pomodoro")
         timer.setSessionTime(sessionTimeSeconds)
+        super.addButtons()
         view?.let { setupVisualBlocks(it) }
         updateVisualBlocks(sessionTimeSeconds)
     }
@@ -73,7 +77,6 @@ open class HomeFragment : TimerFragment() {
             // .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com")
         startActivity(intent)
 
-
         // after saving we end session anyway
         endSession()
     }
@@ -102,7 +105,6 @@ open class HomeFragment : TimerFragment() {
         homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
@@ -226,6 +228,8 @@ open class HomeFragment : TimerFragment() {
         super.onDestroyView()
         _binding = null
 
+        addToSessionList()
+
         println("DEBUG: removing view ${homeViewModel.tags}")
     }
 
@@ -238,51 +242,39 @@ open class HomeFragment : TimerFragment() {
         }
 
         println("DEBUG: adding to session list")
+        // get tags
+        val tags = view?.let {
+            it.findViewById<ChipGroup>(R.id.chipGroup).children.toList().map { e ->
+                (e as Chip).text.toString()
+            }
+        }?: run {
+            listOf<String>()
+        }
 
-        // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
-        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            val tags = homeViewModel.chipGroup?.children?.toList()
-                ?.map { c ->
-                    (c as Chip).text.toString()
-                }
-                ?.reduceOrNull { acc, s -> "$acc,$s" }
-            println("DEBUG: tags, $tags")
-            var sessionId = if(tags != null) {
-                tags
-            } else {
-                ""
-            } + ";${(sessionTimeSeconds/60u)};5"
+        lifecycleScope.launch {
+            println("DEBUG: coroutine starting")
 
-            when(it.contains("sessionList")) {
-                true -> {
-                    it.getString("sessionList", "")?.split("<SESNAME>")?.let {
-                            sessionList ->
-                        if(sessionList.contains(sessionId)) {
-                            sharedData.sessionType?.value = sessionId
-                        } else {
-                            it.edit().apply {
-                                putString("sessionList", "${it.getString("sessionList", "")}<SESNAME>$sessionId")
-                                commit()
-                            }
-                        }
-                    }
-                }
-                false -> {
-                    it.edit().apply {
-                        putString("sessionList", "$sessionId")
-                        commit()
-                    }
-                }
+            sessionId?.let {
+                sessionDao?.updatePomodoro(
+                    Pomodoro(
+                        sessionTimeSeconds.toInt(),
+                        System.currentTimeMillis(),
+                        tags,
+                        it
+                    )
+                )
+            }?: run {
+                // add a new session to database
+                sessionId = sessionDao?.addSession(
+                    Session(sessionTimeSeconds.toInt(),
+                        300,
+                        System.currentTimeMillis(),
+                        tags
+                    )
+                )?.toInt()
             }
 
-            it.edit().apply {
-                timer.sessionTimeSeconds.let { sessionTimeSeconds ->
-                    (sessionTimeSeconds.value?.div(60u))?.let { it1 -> putInt("pomodoroTimeFor${sessionId}", it1.toInt()) }
-                }
-                putInt("breakTimeFor${sessionId}", 5)
-                putString("tagsFor${sessionId}", tags)
-                commit()
-            }
+            println("DEBUG: session added to db")
         }
     }
 

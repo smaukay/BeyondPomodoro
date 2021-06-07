@@ -1,6 +1,5 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.content.Context
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +8,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
+import com.example.beyondpomodoro.sessiontype.Break
+import kotlinx.coroutines.launch
 
 class BreakFragment : TimerFragment() {
 
@@ -32,12 +34,11 @@ class BreakFragment : TimerFragment() {
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
     }
 
-    override fun afterServiceConnected() {
-        super.afterServiceConnected()
-        super.addButtons()
+    override fun addButtons() {
         title("Break time. Stretch. Relax. Hydrate.")
         type("Break")
         timer.setSessionTime(breakTimeSeconds)
+        super.addButtons()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,20 +89,28 @@ class BreakFragment : TimerFragment() {
         endSession()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // since the screen is changing, the entered tags along with the session time, break time can be saved with an ID
-        activity?.getPreferences(Context.MODE_PRIVATE)?.let {
-            sharedData.sessionType?.toString()?.let { sessionId ->
-                it.edit().apply {
-                    timer.sessionTimeSeconds.let { sessionTimeSeconds ->
-                        sessionTimeSeconds.value?.let { value ->
-                            putInt("breakTimeFor${sessionId}", (value/60u).toInt())
-                        }
-                    }
-                    apply()
-                }
+    fun addToSessionList() {
+        // did user start this session?
+        // if so, then either the session is currrently paused or it's running
+        if (timer.state.value == State.INACTIVE) {
+            println("DEBUG: not saving")
+            return
+        }
+
+        lifecycleScope.launch {
+            sessionId?.let {
+                sessionDao?.updateBreak(
+                    Break(
+                        breakTimeSeconds.toInt(),
+                        it
+                    )
+                )
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        addToSessionList()
     }
 }
