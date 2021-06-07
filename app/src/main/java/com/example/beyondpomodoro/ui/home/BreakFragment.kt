@@ -20,7 +20,6 @@ class BreakFragment : TimerFragment() {
 
     private lateinit var viewModel: BreakViewModel
 
-    override var notificationTitle = "Break running"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

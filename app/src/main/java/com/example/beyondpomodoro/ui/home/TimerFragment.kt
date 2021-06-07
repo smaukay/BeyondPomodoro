@@ -12,12 +12,20 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import com.example.beyondpomodoro.R
+import com.example.beyondpomodoro.sessiontype.Session
+import com.example.beyondpomodoro.sessiontype.SessionDao
+import com.example.beyondpomodoro.sessiontype.SessionDatabase
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.launch
 
 open class TimerFragment : Fragment() {
-    private var notificationId: Int = 0
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
 
@@ -27,7 +35,7 @@ open class TimerFragment : Fragment() {
     protected lateinit var timer: PomodoroTimer
     protected lateinit var title: (String) -> Unit
     protected lateinit var type: (String) -> Unit
-    protected open var notificationTitle: String = ""
+    protected var sessionDao: SessionDao? = null
 
     protected val connection = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -55,23 +63,51 @@ open class TimerFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         context?.unbindService(connection)
+
+        // get tags
+        val tags = view?.let {
+            it.findViewById<ChipGroup>(R.id.chipGroup).children.toList().map { e ->
+                (e as Chip).text.toString()
+            }
+        }?: run {
+            listOf<String>()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            // add a new session to database
+            sessionDao?.addSession(
+                Session(sessionTimeSeconds.toInt(),
+                    300,
+                    System.currentTimeMillis(),
+                    tags,
+                    1
+                )
+            )
+        }
     }
 
     open fun afterServiceConnected() {
-        addButtons()
+        // fetch most recent session
+        val cls = this
+        viewLifecycleOwner.lifecycleScope.launch {
+            sessionDao?.getLatestSession()?.apply {
+                cls.sessionTimeSeconds = this.sessionTime?.toUInt() ?: run { 1500u }
+            }
 
-        /*
-         * the timer state may be active or inactive
-         * regardless we only care about updating the view elements
-         * so we dont have to do anything special
-         * the observer takes care of updating the visual elements
-         */
-        timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
-            textViewSeconds.text = convertMinutesToDisplayString(it)
+            addButtons()
+            /*
+             * the timer state may be active or inactive
+             * regardless we only care about updating the view elements
+             * so we dont have to do anything special
+             * the observer takes care of updating the visual elements
+             */
+            timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
+                textViewSeconds.text = convertMinutesToDisplayString(it)
 
-            // update visuals
-            updateVisualBlocks(it)
-        })
+                // update visuals
+                updateVisualBlocks(it)
+            })
+        }
     }
 
     open fun startSession() {
@@ -204,6 +240,17 @@ open class TimerFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        // create database instance
+        val db = context?.let {
+            Room.databaseBuilder(
+                it,
+                SessionDatabase::class.java, "session-types"
+            ).build()
+        }
+
+        sessionDao = db?.sessionDao()
+
         // get the last activity type on activity creation and store in sharedData
         activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
             if (prefs.contains("lastSessionType")) {

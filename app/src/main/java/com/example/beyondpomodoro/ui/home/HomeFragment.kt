@@ -29,9 +29,6 @@ open class HomeFragment : TimerFragment() {
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
 
-    // override notification title
-    override var notificationTitle = "Pomodoro Running"
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!

@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         // create timer service
         Intent(this, TimerService::class.java).also { intent ->
             startService(intent)
