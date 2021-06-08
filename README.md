@@ -41,7 +41,7 @@ But we also want to focus fundamentally on privacy. So we have no intention of a
 
 You can choose to simply press save on the calendar event, or edit the details further as you choose.
 
-https://user-images.githubusercontent.com/84573959/121217697-b6f81900-c89f-11eb-8ede-9b2856261c27.mp4
+[Adding notes to a session](https://user-images.githubusercontent.com/84573959/121219668-916c0f00-c8a1-11eb-9ebc-3173d1788e87.mp4)
 
 # What this app is not
 The aim is to be minimal so we decided to steer clear of certain frequently seen features in Pomodoro apps.
