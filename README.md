@@ -12,10 +12,11 @@ A minimal Android app for Pomodoro sessions with focus on session notes.
 
 
 # Another Pomodoro app?
-A quick search for Pomodoro in play store results in 1000s of apps. We've used several of them. Before this project, our app of choice was [GetFlow](https://github.com/AdrianMiozga/GetFlow/). In a lot of ways, this project is inspited largely by GetFlow.
+A quick search for Pomodoro in play store results in 1000s of apps. We've used several of them. Before this project, our app of choice was [GetFlow](https://github.com/AdrianMiozga/GetFlow/). In a lot of ways, this project is inspired largely by GetFlow.
 
 ## But?
-The missing piece in the existing Pomodoro apps: notes about each session. The original pomodoro technique forces you to focus on a single task for a set time. This is meant to reduce the cognitive load during the set time. It also forces you to break down your largest objective into a tangible short task.
+The missing piece in the existing Pomodoro apps: notes about each session. 
+The original pomodoro technique forces you to focus on a single task for a set time. This is meant to reduce the cognitive load during the set time. It also forces you to break down your largest objective into a tangible short task.
 + But what about the result of a session?
 + Surely each session is a sucess or a failure or something in between?
 + Maybe the task was too large and so drags on to the next session?
