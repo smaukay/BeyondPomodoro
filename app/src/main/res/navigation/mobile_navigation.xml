@@ -8,8 +8,8 @@
     <fragment
         android:id="@+id/pomodoroFragment"
         android:name="com.example.beyondpomodoro.ui.home.HomeFragment"
-        android:label="@string/menu_pomodoro"
-        tools:layout="@layout/fragment_home" >
+        android:label="Session"
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_nav_pomodoro_to_breakFragment"
             app:destination="@id/breakFragment" />
@@ -17,18 +17,18 @@
     <fragment
         android:id="@+id/breakFragment"
         android:name="com.example.beyondpomodoro.ui.home.BreakFragment"
-        android:label="BreakFragment"
+        android:label="Break"
         tools:layout="@layout/break_fragment" />
     <fragment
         android:id="@+id/aboutFragment"
         android:name="com.example.beyondpomodoro.ui.home.AboutFragment"
-        android:label="fragment_about"
+        android:label="About this app"
         tools:layout="@layout/fragment_about" />
     <fragment
         android:id="@+id/sessionInfoFragment"
         android:name="com.example.beyondpomodoro.SessionInfoFragment"
-        android:label="fragment_session_info_list"
-        tools:layout="@layout/fragment_session_info_list" >
+        android:label="Activities"
+        tools:layout="@layout/fragment_session_info_list">
         <action
             android:id="@+id/action_sessionInfoFragment_to_pomodoroFragment"
             app:destination="@id/pomodoroFragment" />

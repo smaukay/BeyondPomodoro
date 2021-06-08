@@ -15,7 +15,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
-        android:hint="name this session type"
+        android:hint="@string/hint_activity_name"
         android:inputType="textPersonName"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"

@@ -36,7 +36,8 @@
     <string name="persistent_channel_name">persistentBeyondPomodoro</string>
     <string name="persistent_channel_description">Status bar timer view for BeyondPomodoro</string>
     <string name="persistent_channel_id">persistentChannelBeyondPomodoro</string>
-    <string name="menu_session_type">Session types</string>
+    <string name="menu_session_type">Activities</string>
     <string name="session_already_active_message">The session is already active. You can end it if you like.</string>
     <string name="create_new_session_type">Create new session type</string>
+    <string name="hint_activity_name">name this activity</string>
 </resources>
