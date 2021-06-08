@@ -58,7 +58,7 @@ interface SessionDao {
     suspend fun updateBreak(b: Break)
 
     @Query("SELECT * FROM session ORDER BY used_at")
-    fun getSessions(): List<Session>
+    suspend fun getSessions(): List<Session>
 }
 
 @Database(entities = arrayOf(Session::class), version = 1)

@@ -1,11 +1,11 @@
 package com.example.beyondpomodoro
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.sessiontype.SessionList
 import com.example.beyondpomodoro.sessiontype.SessionType
+import kotlinx.coroutines.launch
 
 
 /**
@@ -47,50 +48,21 @@ class SessionInfoFragment : Fragment() {
                     else -> GridLayoutManager(context, columnCount)
                 }
 
-                // get the last activity type on activity creation and store in sharedData
-                activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                    val settingsSet = if (prefs.contains("sessionList")) {
-                        val default: Set<String> = setOf()
-                        prefs.getString("sessionList", "")?.let {
-                            val sessionNames = it.split("<SESNAME>")
-                            sessionNames.map { sname ->
-                                prefs.getString(sname, sname).orEmpty()
-                            }
-                        }?: run {
-                            listOf()
-                        }
-                    } else {
-                        listOf()
-                    }
-
-                    println("DEBUG: $settingsSet")
-
-                    // now collect the info for this session id
-                    val sessions = settingsSet.mapIndexed { num, sessionId ->
-                        val title = prefs.getString("$sessionId", "")
-                        val onTime = prefs.getInt("pomodoroTimeFor$sessionId", 25).toUInt()
-                        val offTime = prefs.getInt("breakTimeFor$sessionId", 5).toUInt()
-                        val tags = prefs.getString("tagsFor$sessionId", "")
-                        println("DEBUG: $sessionId, $onTime, $offTime, $tags")
-                        title?.let {
-                            tags?.let {
-                                SessionType(num.toUInt(), sessionId, title, onTime, offTime, tags)
-                            }
-                        }
+                // fetch sessions from database
+                lifecycleScope.launch {
+                    val sessions = (activity as MainActivity).db.sessionDao().getSessions().mapIndexed {idx, e ->
+                        SessionType(idx.toUInt(),
+                            e.sid.toString(),
+                            "",
+                            e.sessionTime?.toUInt()?.div(60u)?: run {25u},
+                            e.breakTime?.toUInt()?.div(60u)?: run {5u},
+                            e.tags?: run{ listOf<String>()})
                     }
 
                     adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions).items) {
                         context.toast("${it.id}, ${it.title}")
-
-                        // save the title to sharedprefs
-                        prefs.edit().apply {
-                            putString(it.id, it.title)
-                            apply()
-                        }
                     };
-
                 }
-
             }
         }
         return view

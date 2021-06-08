@@ -53,8 +53,10 @@ data class SessionType(
     var title: String,
     val onTime: UInt,
     val offTime: UInt,
-    val tags: String
+    val tags: List<String>
 ) {
     override fun toString(): String =
-        "$serial, $title, $onTime, $offTime. $tags"
+        "$serial, $title, $onTime, $offTime. ${tags.reduceOrNull{
+            acc, e -> "$acc, $e"
+        }}"
 }

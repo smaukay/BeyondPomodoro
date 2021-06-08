@@ -35,7 +35,9 @@ class MySessionInfoRecyclerViewAdapter(
         holder.sessionInfoTitleEditText.setText(item.title)
         holder.sessionInfoSessionTimeView.text = item.onTime.toString()
         holder.sessionInfoBreakTimeView.text = item.offTime.toString()
-        holder.tagsTextView.text = item.tags
+        holder.tagsTextView.text = item.tags.reduceOrNull {
+            acc, e -> "$acc, $e"
+        }?: run { "" }
 
         holder.itemView.setOnClickListener { listener(item) }
         holder.sessionInfoTitleEditText.apply {
