@@ -21,15 +21,17 @@ import com.example.beyondpomodoro.sessiontype.SessionDao
 import kotlinx.coroutines.launch
 
 open class TimerFragment : Fragment() {
+    protected var tags: MutableList<String> = mutableListOf()
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
     protected var sessionId: Int? = null
+    protected var title: String? = null
 
     lateinit var startButton: Button
     lateinit var endButton: Button
     lateinit var textViewSeconds: TextView
     protected lateinit var timer: PomodoroTimer
-    protected lateinit var title: (String) -> Unit
+    protected lateinit var notificationTitle: (String) -> Unit
     protected lateinit var type: (String) -> Unit
     protected var sessionDao: SessionDao? = null
 
@@ -37,7 +39,7 @@ open class TimerFragment : Fragment() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as TimerService.LocalBinder
             timer = binder.timer
-            title = {
+            notificationTitle = {
                 binder.title(it)
             }
             type = {
@@ -69,6 +71,13 @@ open class TimerFragment : Fragment() {
                 cls.sessionTimeSeconds = this.sessionTime?.toUInt() ?: run { 1500u }
                 cls.breakTimeSeconds = this.breakTime?.toUInt() ?: run { 300u }
                 cls.sessionId = this.sid
+                println("DEBUG: tags found ${this.tags}")
+                cls.tags.clear()
+                this.tags?.map {
+                    cls.tags.add(it)
+                }
+                println("DEBUG: tags found ${cls.tags}")
+                cls.title = this.title
             }
 
             println("DEBUG: sid found: ${cls.sessionId}")
@@ -259,7 +268,12 @@ open class TimerFragment : Fragment() {
     open fun saveSession() {
     }
 
+    open fun addToSessionList() {
+
+    }
+
     open fun endSession() {
+        addToSessionList()
         timer.clockReset()
         textViewSeconds.text = convertMinutesToDisplayString(sessionTimeSeconds)
         timer.pomodoroReset()

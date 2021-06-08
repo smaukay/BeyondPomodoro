@@ -33,6 +33,9 @@ open class HomeFragment : TimerFragment() {
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
 
+    var editTitle: EditText? = null
+    var editTags: EditText? = null
+    var chipGroup: ChipGroup? = null
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -41,9 +44,10 @@ open class HomeFragment : TimerFragment() {
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
 
     override fun addButtons() {
-        title("Session running")
+        notificationTitle("Session running")
         type("Pomodoro")
         timer.setSessionTime(sessionTimeSeconds)
+        populateTags()
         super.addButtons()
         view?.let { setupVisualBlocks(it) }
         updateVisualBlocks(sessionTimeSeconds)
@@ -88,7 +92,7 @@ open class HomeFragment : TimerFragment() {
         showAllVisualBlocks()
 
         // clear title field
-        homeViewModel.editTitle?.setText("")
+        editTitle?.setText("")
         findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
     }
 
@@ -108,55 +112,55 @@ open class HomeFragment : TimerFragment() {
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        // timerViewModel.title = "Pomodoro Running"
-        // timerViewModel.type = "Session"
-        homeViewModel.chipGroup = view.findViewById(R.id.chipGroup)
-
-        println("DEBUG: creating view: ${homeViewModel.tags}")
+    fun populateTags() {
         // all existing tags
-        println("DEBUG: tags already found: ${homeViewModel.tags.size}")
-        homeViewModel.tags.forEach {
+        println("DEBUG: tags already found: ${tags.size}")
+
+        tags.forEach {
             val chip = Chip(this.requireContext())
-            chip.text = it.key
+            chip.text = it
             chip.isCloseIconVisible = true
             chip.setOnCloseIconClickListener { view ->
                 // remove chip from chipgroup
-                homeViewModel.chipGroup?.removeView(chip)
-                homeViewModel.tags.remove(it.key)
+                chipGroup?.removeView(chip)
+                tags.remove(it)
             }
 
             activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                if(prefs.contains("tag_colour_${it.key}")) {
-                    chip.chipBackgroundColor = ColorStateList.valueOf(prefs.getInt("tag_colour_${it.key}", 1))
+                if(prefs.contains("tag_colour_${it}")) {
+                    chip.chipBackgroundColor = ColorStateList.valueOf(prefs.getInt("tag_colour_${it}", 1))
                 }
             }
-            homeViewModel.chipGroup?.addView(chip)
+            chipGroup?.addView(chip)
         }
+    }
 
-        homeViewModel.editTitle = view.findViewById<EditText>(R.id.editTextTitle).apply {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        chipGroup = view.findViewById(R.id.chipGroup)
+
+        editTitle = view?.findViewById<EditText>(R.id.editTextTitle)?.apply {
+            setText("")
             doOnTextChanged { text, start, before, count ->
-                homeViewModel.title = text.toString()
+                title = text.toString()
             }
         }
-
-        homeViewModel.editTags = view.findViewById(R.id.editTextTags)
-        homeViewModel.editTags?.setOnEditorActionListener { v, actionId, event ->
+        editTags = view.findViewById(R.id.editTextTags)
+        editTags?.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
                     // add a new chip to the group
-                    val tag = homeViewModel.editTags?.text.toString()
-                    when(homeViewModel.chipGroup?.children?.toList()?.any { c -> ((c as Chip).text.toString()) == tag }) {
+                    val tag = editTags?.text.toString()
+                    when(chipGroup?.children?.toList()?.any { c -> ((c as Chip).text.toString()) == tag }) {
                         false -> {
                             val chip = Chip(this.requireContext())
                             chip.text = tag
                             chip.isCloseIconVisible = true
-                            chip.setOnCloseIconClickListener {
+                            chip.setOnCloseIconClickListener { _ ->
                                 // remove chip from chipgroup
-                                homeViewModel.chipGroup?.removeView(chip)
-                                homeViewModel.tags.remove(tag)
+                                chipGroup?.removeView(chip)
+                                tags.remove(v.tag)
                             }
                             // TODO: was this tag previously entered?
                             // if so, what colour was assigned to it?
@@ -176,9 +180,8 @@ open class HomeFragment : TimerFragment() {
                                     }
                                 }
                             }
-                            homeViewModel.tags[tag] = tag
-                            println("DEBUG: added to tags: ${homeViewModel.tags.size}")
-                            homeViewModel.chipGroup?.addView(chip)
+                            tags.add(tag)
+                            chipGroup?.addView(chip)
                         }
                         else ->
                             {
@@ -186,7 +189,7 @@ open class HomeFragment : TimerFragment() {
                             }
                     }
 
-                    homeViewModel.editTags?.setText("")
+                    editTags?.setText("")
                     true
                 }
                 else -> {
@@ -227,17 +230,14 @@ open class HomeFragment : TimerFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-
-        addToSessionList()
-
-        println("DEBUG: removing view ${homeViewModel.tags}")
     }
 
-    fun addToSessionList() {
+    override fun addToSessionList() {
+        super.addToSessionList()
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
         if(timer.state.value == State.INACTIVE) {
-            println("DEBUG: not saving")
+            println("DEBUG: not saving because timer state is ${timer.state.value}")
             return
         }
 
@@ -246,9 +246,9 @@ open class HomeFragment : TimerFragment() {
         val tags = view?.let {
             it.findViewById<ChipGroup>(R.id.chipGroup).children.toList().map { e ->
                 (e as Chip).text.toString()
-            }
+            }.toSet()
         }?: run {
-            listOf<String>()
+            setOf<String>()
         }
 
         lifecycleScope.launch {
@@ -257,6 +257,7 @@ open class HomeFragment : TimerFragment() {
             sessionId?.let {
                 sessionDao?.updatePomodoro(
                     Pomodoro(
+                        homeViewModel.title,
                         sessionTimeSeconds.toInt(),
                         System.currentTimeMillis(),
                         tags,
@@ -266,7 +267,8 @@ open class HomeFragment : TimerFragment() {
             }?: run {
                 // add a new session to database
                 sessionId = sessionDao?.addSession(
-                    Session(sessionTimeSeconds.toInt(),
+                    Session(homeViewModel.title,
+                        sessionTimeSeconds.toInt(),
                         300,
                         System.currentTimeMillis(),
                         tags

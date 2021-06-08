@@ -5,19 +5,26 @@ import androidx.room.*
 
 @Entity
 data class Session (
+    @ColumnInfo(name = "title") var title: String?,
     @ColumnInfo(name = "session_time") var sessionTime: Int?,
     @ColumnInfo(name = "break_time") var breakTime: Int?,
     @ColumnInfo(name = "used_at") var usedAt: Long?,
-    @ColumnInfo(name = "tags") var tags: List<String>?,
+    @ColumnInfo(name = "tags") var tags: Set<String>?,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 ) {
-    constructor(): this(1500, 300, null, null)
+    constructor(): this("", 1500, 300, null, null)
 }
 
+data class Title (
+    @ColumnInfo(name = "title") var title: String?,
+    @PrimaryKey(autoGenerate = true) val sid: Int = 0
+)
+
 data class Pomodoro (
+    @ColumnInfo(name = "title") var title: String?,
     @ColumnInfo(name = "session_time") var sessionTime: Int?,
     @ColumnInfo(name = "used_at") var usedAt: Long?,
-    @ColumnInfo(name = "tags") var tags: List<String>?,
+    @ColumnInfo(name = "tags") var tags: Set<String>?,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 )
 
@@ -28,7 +35,7 @@ data class Break (
 
 class Converters {
     @TypeConverter
-    fun toString(tags: List<String>): String {
+    fun toString(tags: Set<String>): String {
         return when(tags.size) {
             0 -> ""
             else -> tags.reduce { acc, s ->
@@ -38,8 +45,8 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromString(s: String): List<String> {
-        return s.split("<TAGSEP>")
+    fun fromString(s: String): Set<String> {
+        return s.split("<TAGSEP>").toSet()
     }
 }
 
@@ -56,6 +63,9 @@ interface SessionDao {
 
     @Update(entity = Session::class)
     suspend fun updateBreak(b: Break)
+
+    @Update(entity = Session::class)
+    suspend fun updateTitle(t: Title)
 
     @Query("SELECT * FROM session ORDER BY used_at")
     suspend fun getSessions(): List<Session>

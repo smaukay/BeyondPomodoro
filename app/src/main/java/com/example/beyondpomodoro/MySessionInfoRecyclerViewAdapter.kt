@@ -8,6 +8,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.databinding.FragmentSessionInfoBinding
 import com.example.beyondpomodoro.sessiontype.SessionType
+import java.util.*
 
 /**
  * [RecyclerView.Adapter] that can display a [SessionType].
@@ -27,7 +28,6 @@ class MySessionInfoRecyclerViewAdapter(
                 false
             )
         )
-
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -41,8 +41,17 @@ class MySessionInfoRecyclerViewAdapter(
 
         holder.itemView.setOnClickListener { listener(item) }
         holder.sessionInfoTitleEditText.apply {
+            var timer: Timer? = null
             doOnTextChanged { text, start, before, count ->
                 item.title = text.toString()
+             //   timer?.cancel()
+             //   timer = Timer()
+             //   timer?.schedule(timerTask {
+             //       println("DEBUG: text changed $text")
+             //       // perform database call for this item
+             //       println("DEBUG: item to save $item")
+
+             //   }, 200)
             }
         }
     }

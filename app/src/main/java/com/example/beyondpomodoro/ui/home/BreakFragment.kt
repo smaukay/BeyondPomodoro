@@ -35,7 +35,7 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun addButtons() {
-        title("Break time. Stretch. Relax. Hydrate.")
+        notificationTitle("Break time. Stretch. Relax. Hydrate.")
         type("Break")
         timer.setSessionTime(breakTimeSeconds)
         super.addButtons()
@@ -76,10 +76,10 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
+        addToSessionList()
         timer.clockReset()
         timer.pomodoroReset()
         super.buttonsReset()
-
         backToPomodoro()
     }
 
@@ -89,7 +89,8 @@ class BreakFragment : TimerFragment() {
         endSession()
     }
 
-    fun addToSessionList() {
+    override fun addToSessionList() {
+        super.addToSessionList()
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
         if (timer.state.value == State.INACTIVE) {
@@ -107,10 +108,5 @@ class BreakFragment : TimerFragment() {
                 )
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        addToSessionList()
     }
 }

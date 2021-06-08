@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 class SessionInfoFragment : Fragment() {
 
     private var columnCount = 1
+    private var sessions: List<SessionType>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,22 +51,28 @@ class SessionInfoFragment : Fragment() {
 
                 // fetch sessions from database
                 lifecycleScope.launch {
-                    val sessions = (activity as MainActivity).db.sessionDao().getSessions().mapIndexed {idx, e ->
+                    sessions = (activity as MainActivity).db.sessionDao().getSessions().mapIndexed {idx, e ->
                         SessionType(idx.toUInt(),
                             e.sid.toString(),
                             "",
                             e.sessionTime?.toUInt()?.div(60u)?: run {25u},
                             e.breakTime?.toUInt()?.div(60u)?: run {5u},
-                            e.tags?: run{ listOf<String>()})
+                            e.tags?.toList()?: run{ listOf<String>()})
                     }
 
-                    adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions).items) {
+                    adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions!!).items) {
                         context.toast("${it.id}, ${it.title}")
                     };
                 }
             }
         }
         return view
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        println("DEBUG: destorying recycler view... ")
+        println("DEBUG: $sessions")
     }
 
     companion object {
