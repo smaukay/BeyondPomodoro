@@ -17,6 +17,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
+import com.example.beyondpomodoro.sessiontype.Session
 import com.example.beyondpomodoro.sessiontype.SessionDao
 import kotlinx.coroutines.launch
 
@@ -63,21 +64,34 @@ open class TimerFragment : Fragment() {
         context?.unbindService(connection)
     }
 
+    open fun readSession(s: Session) {
+        sessionTimeSeconds = s.sessionTime?.toUInt() ?: run { 1500u }
+        breakTimeSeconds = s.breakTime?.toUInt() ?: run { 300u }
+        sessionId = s.sid
+        println("DEBUG: tags found ${this.tags}")
+        tags.clear()
+        s.tags?.map {
+            tags.add(it)
+        }
+        println("DEBUG: tags found ${tags}")
+        title = s.title
+    }
+
     open fun afterServiceConnected() {
         // fetch most recent session
         val cls = this
         lifecycleScope.launch {
-            sessionDao?.getLatestSession()?.apply {
-                cls.sessionTimeSeconds = this.sessionTime?.toUInt() ?: run { 1500u }
-                cls.breakTimeSeconds = this.breakTime?.toUInt() ?: run { 300u }
-                cls.sessionId = this.sid
-                println("DEBUG: tags found ${this.tags}")
-                cls.tags.clear()
-                this.tags?.map {
-                    cls.tags.add(it)
+            sharedData.sid?.let {
+                println("DEBUG: sid has been set")
+                sessionDao?.getSession(it).apply {
+                    this?.let { s ->
+                        readSession(s)
+                    }
                 }
-                println("DEBUG: tags found ${cls.tags}")
-                cls.title = this.title
+            }?: run {
+                sessionDao?.getLatestSession()?.apply {
+                    readSession(this)
+                }
             }
 
             println("DEBUG: sid found: ${cls.sessionId}")
@@ -234,17 +248,6 @@ open class TimerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.timer_fragment, container, false)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        // get the last activity type on activity creation and store in sharedData
-        activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-            if (prefs.contains("lastSessionType")) {
-                sharedData.sessionType?.value = prefs.getString("lastSessionType", "default")
-            }
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

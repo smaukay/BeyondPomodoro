@@ -5,7 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +17,7 @@ import com.example.beyondpomodoro.sessiontype.SessionDao
 import com.example.beyondpomodoro.sessiontype.SessionList
 import com.example.beyondpomodoro.sessiontype.SessionType
 import com.example.beyondpomodoro.sessiontype.Title
+import com.example.beyondpomodoro.ui.home.SharedViewModel
 import kotlinx.coroutines.launch
 
 
@@ -27,6 +30,7 @@ class SessionInfoFragment : Fragment() {
     private var columnCount = 1
     private var sessions: List<SessionType>? = null
 
+    protected val sharedData: SharedViewModel by activityViewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -66,6 +70,12 @@ class SessionInfoFragment : Fragment() {
 
                     adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions!!).items) {
                         context.toast("${it.id}, ${it.title}")
+
+                        // selected session id saved
+                        sharedData.sid = it.id.toInt()
+
+                        // navigate to Home Fragment
+                        findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
                     };
                 }
             }

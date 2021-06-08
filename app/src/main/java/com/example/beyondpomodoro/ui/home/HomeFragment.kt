@@ -74,7 +74,7 @@ open class HomeFragment : TimerFragment() {
             .setData(CalendarContract.Events.CONTENT_URI)
             .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, homeViewModel.sessionStartTimeMillis)
             .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, homeViewModel.sessionEndTimeMillis)
-            .putExtra(CalendarContract.Events.TITLE, homeViewModel.title)
+            .putExtra(CalendarContract.Events.TITLE, title)
             .putExtra(CalendarContract.Events.DESCRIPTION, descriptionSuggestion)
             // .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
             // .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
@@ -140,7 +140,7 @@ open class HomeFragment : TimerFragment() {
 
         chipGroup = view.findViewById(R.id.chipGroup)
 
-        editTitle = view?.findViewById<EditText>(R.id.editTextTitle)?.apply {
+        editTitle = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
             setText("")
             doOnTextChanged { text, start, before, count ->
                 title = text.toString()

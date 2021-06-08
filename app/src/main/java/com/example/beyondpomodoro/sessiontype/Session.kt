@@ -67,6 +67,9 @@ interface SessionDao {
     @Update(entity = Session::class)
     suspend fun updateTitle(t: Title)
 
+    @Query("SELECT * FROM session WHERE sid = :sid")
+    suspend fun getSession(sid: Int): Session
+
     @Query("SELECT * FROM session ORDER BY used_at")
     suspend fun getSessions(): List<Session>
 }
