@@ -1,6 +1,9 @@
 # BeyondPomodoro
 A minimal Android app for Pomodoro sessions.
 
+<img src=https://user-images.githubusercontent.com/84573959/121213533-ee64c680-c89b-11eb-886c-a673557857d2.png width="200px" />
+
+
 # Another Pomodoro app?
 A quick search for Pomodoro in play store results in 1000s of apps. We've used several of them. Before this project, our app of choice was [GetFlow](https://github.com/AdrianMiozga/GetFlow/). In a lot of ways, this project is inspited largely by GetFlow.
 
@@ -17,7 +20,11 @@ These are questions we felt were important that were not addressed in existing a
 >
 
 # Pomodoro + Timetracking
-So was born BeyondPomodoro. To tie notes to Pomodoro sessions in an elegant way. Instead of adding notes, statistics and analytics into the app, we rely on an existing core app of every phone: the calendar.
+So was born BeyondPomodoro. To tie notes to Pomodoro sessions in an elegant way. 
+
+<img src=https://user-images.githubusercontent.com/84573959/121214421-be69f300-c89c-11eb-98e2-2772aa57133b.png width="200px" />
+
+Instead of adding notes, statistics and analytics into the app, we rely on an existing core app of every phone: the calendar.
 We have no intention of reinventing the wheel. 
 + A calendar performs time tracking extremely well
 + There are plenty of calendar apps
@@ -30,7 +37,11 @@ But we also want to focus fundamentally on privacy. So we have no intention of a
 + end time, 
 + description based on your tags and activity name
 
+<img src=https://user-images.githubusercontent.com/84573959/121214581-de011b80-c89c-11eb-954f-d56ac6b4440e.png width="200px" />
+
 You can choose to simply press save on the calendar event, or edit the details further as you choose.
+
+https://user-images.githubusercontent.com/84573959/121217697-b6f81900-c89f-11eb-8ede-9b2856261c27.mp4
 
 # What this app is not
 The aim is to be minimal so we decided to steer clear of certain frequently seen features in Pomodoro apps.
