@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
+import com.example.beyondpomodoro.sessiontype.SessionDao
 import com.example.beyondpomodoro.sessiontype.SessionList
 import com.example.beyondpomodoro.sessiontype.SessionType
+import com.example.beyondpomodoro.sessiontype.Title
 import kotlinx.coroutines.launch
 
 
@@ -21,6 +23,7 @@ import kotlinx.coroutines.launch
  */
 class SessionInfoFragment : Fragment() {
 
+    private var sessionDao: SessionDao? = null
     private var columnCount = 1
     private var sessions: List<SessionType>? = null
 
@@ -51,10 +54,11 @@ class SessionInfoFragment : Fragment() {
 
                 // fetch sessions from database
                 lifecycleScope.launch {
-                    sessions = (activity as MainActivity).db.sessionDao().getSessions().mapIndexed {idx, e ->
+                    sessionDao = (activity as MainActivity).db.sessionDao()
+                    sessions = sessionDao?.getSessions()?.mapIndexed {idx, e ->
                         SessionType(idx.toUInt(),
                             e.sid.toString(),
-                            "",
+                            e.title?: run {""},
                             e.sessionTime?.toUInt()?.div(60u)?: run {25u},
                             e.breakTime?.toUInt()?.div(60u)?: run {5u},
                             e.tags?.toList()?: run{ listOf<String>()})
@@ -73,6 +77,12 @@ class SessionInfoFragment : Fragment() {
         super.onDestroyView()
         println("DEBUG: destorying recycler view... ")
         println("DEBUG: $sessions")
+        
+        lifecycleScope.launch {
+            sessions?.map {
+                sessionDao?.updateTitle(Title(it.title, it.id.toInt()))
+            }
+        }
     }
 
     companion object {
