@@ -33,8 +33,8 @@ class MySessionInfoRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
         holder.sessionInfoTitleEditText.setText(item.title)
-        holder.sessionInfoSessionTimeView.text = item.onTime.toString()
-        holder.sessionInfoBreakTimeView.text = item.offTime.toString()
+        holder.sessionInfoSessionTimeView.text = "${item.onTime}m"
+        holder.sessionInfoBreakTimeView.text = "${item.offTime}m"
         holder.tagsTextView.text = item.tags.reduceOrNull {
             acc, e -> "$acc, $e"
         }?: run { "" }
@@ -44,14 +44,6 @@ class MySessionInfoRecyclerViewAdapter(
             var timer: Timer? = null
             doOnTextChanged { text, start, before, count ->
                 item.title = text.toString()
-             //   timer?.cancel()
-             //   timer = Timer()
-             //   timer?.schedule(timerTask {
-             //       println("DEBUG: text changed $text")
-             //       // perform database call for this item
-             //       println("DEBUG: item to save $item")
-
-             //   }, 200)
             }
         }
     }

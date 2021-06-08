@@ -46,7 +46,10 @@ class Converters {
 
     @TypeConverter
     fun fromString(s: String): Set<String> {
-        return s.split("<TAGSEP>").toSet()
+        return when(s.isNotEmpty()){
+            true -> s.split("<TAGSEP>").toSet()
+            false -> setOf<String>()
+        }
     }
 }
 

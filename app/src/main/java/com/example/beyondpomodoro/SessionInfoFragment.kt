@@ -13,11 +13,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
-import com.example.beyondpomodoro.sessiontype.SessionDao
-import com.example.beyondpomodoro.sessiontype.SessionList
-import com.example.beyondpomodoro.sessiontype.SessionType
-import com.example.beyondpomodoro.sessiontype.Title
+import com.example.beyondpomodoro.sessiontype.*
 import com.example.beyondpomodoro.ui.home.SharedViewModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
 
@@ -44,10 +42,26 @@ class SessionInfoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_session_info_list, container, false)
+        val recyclerView = view.findViewWithTag<RecyclerView>("session_list")
+
+        // fab action
+        view.findViewById<FloatingActionButton>(R.id.newSessionTypeButton).apply {
+            setOnClickListener {
+                // create a new database entry with a new session id and default values of on and off time
+                lifecycleScope.launch {
+                    sharedData.sid = sessionDao?.addSession(
+                        Session("", 1500, 300, null, setOf<String>())
+                    )?.toInt()
+
+                    // navigate to Home Fragment
+                    findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
+                }
+            }
+        }
 
         // Set the adapter
-        if (view is RecyclerView) {
-            with(view) {
+        if (recyclerView is RecyclerView) {
+            with(recyclerView) {
 
                 addItemDecoration(DividerItemDecoration(context, VERTICAL))
 
