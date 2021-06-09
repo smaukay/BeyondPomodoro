@@ -57,6 +57,11 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun onTimerFinish() {
+        // hide end button
+        endButton.visibility = View.INVISIBLE
+        controlButtonAction {
+            endSession()
+        }
         val toast = Toast.makeText(
             view?.context,
             getString(R.string.pomodoro_break_end_message),
