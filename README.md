@@ -78,3 +78,6 @@ This is a common feature which is extremely useful. Unfortunaltely Android 10 no
 
 ## wifi/network settings 📶
 This is again extremely useful but once again we cannot currently: same reason as above.
+
+# Artwork
+Thanks to [bakudas](https://bakudas.itch.io/) for the sprites used in the Break screen.
