@@ -20,6 +20,6 @@
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:scaleX="0.5"
         android:scaleY=".5"
-        app:srcCompat="@drawable/logo" />
+        app:srcCompat="@drawable/app_logo" />
 
 </LinearLayout>
