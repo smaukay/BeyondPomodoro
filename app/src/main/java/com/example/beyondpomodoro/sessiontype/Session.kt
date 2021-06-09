@@ -2,6 +2,8 @@ package com.example.beyondpomodoro.sessiontype
 
 import android.content.Context
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Entity
 data class Session (
@@ -72,6 +74,11 @@ interface SessionDao {
 
     @Query("SELECT * FROM session WHERE sid = :sid")
     suspend fun getSession(sid: Int): Session
+
+    @Query("SELECT title FROM session WHERE sid = :sid")
+    fun _getTitle(sid: Int): Flow<String>
+
+    fun getTitle(sid: Int) = _getTitle(sid).distinctUntilChanged()
 
     @Query("SELECT * FROM session ORDER BY used_at")
     suspend fun getSessions(): List<Session>
