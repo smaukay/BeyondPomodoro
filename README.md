@@ -7,7 +7,10 @@
 A minimal Android app for Pomodoro sessions with focus on session notes. 
 
 <p align="center">
-<img src=https://user-images.githubusercontent.com/84573959/121213533-ee64c680-c89b-11eb-886c-a673557857d2.png width="200px" />
+<img src=https://user-images.githubusercontent.com/84573959/121331655-b8275580-c934-11eb-986a-4654cb5933b8.png alt="Activity selection screen" width="200px" />
+<img src=https://user-images.githubusercontent.com/84573959/121213533-ee64c680-c89b-11eb-886c-a673557857d2.png alt="session screen" width="200px" />
+<img src="https://user-images.githubusercontent.com/84573959/121331137-3a634a00-c934-11eb-80cb-96ba12c4a74c.png" alt="break screen" width="200px" />
+
 </p>
 
 
