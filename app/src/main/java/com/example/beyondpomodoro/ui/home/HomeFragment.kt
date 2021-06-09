@@ -264,7 +264,6 @@ open class HomeFragment : TimerFragment() {
             sessionId?.let {
                 sessionDao?.updatePomodoro(
                     Pomodoro(
-                        homeViewModel.title,
                         sessionTimeSeconds.toInt(),
                         System.currentTimeMillis(),
                         tags,
@@ -328,6 +327,12 @@ open class HomeFragment : TimerFragment() {
         super.onTimerFinish()
         hideAllVisualBlocks()
 
+        // hide end button
+        startButton.text = view?.context?.getString(R.string.pomodoro_save_session_button)
+        endButton.visibility = INVISIBLE
+        controlButtonAction {
+            saveSession()
+        }
         val toast = Toast.makeText(
             view?.context,
             getString(R.string.pomodoro_toast_session_complete),

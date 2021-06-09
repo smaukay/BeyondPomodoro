@@ -23,7 +23,6 @@ data class Title (
 )
 
 data class Pomodoro (
-    @ColumnInfo(name = "title") var title: String?,
     @ColumnInfo(name = "session_time") var sessionTime: Int?,
     @ColumnInfo(name = "used_at") var usedAt: Long?,
     @ColumnInfo(name = "tags") var tags: Set<String>?,
