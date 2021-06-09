@@ -51,8 +51,12 @@ open class HomeFragment : TimerFragment() {
         super.addButtons()
         view?.let { setupVisualBlocks(it) }
         updateVisualBlocks(sessionTimeSeconds)
+    }
+
+    override fun updateTitle(t: String) {
+        super.updateTitle(t)
         view?.findViewById<TextView>(R.id.activity_name).apply {
-            this?.text = title
+            this?.text = t
         }
     }
 

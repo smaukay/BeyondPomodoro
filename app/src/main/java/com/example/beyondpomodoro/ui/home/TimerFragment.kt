@@ -19,6 +19,7 @@ import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.sessiontype.Session
 import com.example.beyondpomodoro.sessiontype.SessionDao
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 open class TimerFragment : Fragment() {
@@ -81,11 +82,18 @@ open class TimerFragment : Fragment() {
         // fetch most recent session
         val cls = this
         lifecycleScope.launch {
+            println("DEBUG: launching after service connected coroutine")
             sharedData.sid?.let {
                 println("DEBUG: sid has been set")
-                sessionDao?.getSession(it).apply {
-                    this?.let { s ->
-                        readSession(s)
+                sessionDao?.getSession(it)?.let { s ->
+                    readSession(s)
+                }
+                lifecycleScope.launch {
+                    sessionDao?.getTitle(it)?.let { s ->
+                        s.collect { t ->
+                            title = t
+                            updateTitle(t)
+                        }
                     }
                 }
             }?: run {
@@ -112,6 +120,10 @@ open class TimerFragment : Fragment() {
                 updateVisualBlocks(it)
             })
         }
+    }
+
+    open fun updateTitle(t: String) {
+
     }
 
     open fun startSession() {
