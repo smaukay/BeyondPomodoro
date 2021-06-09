@@ -260,7 +260,6 @@ open class HomeFragment : TimerFragment() {
             sessionId?.let {
                 sessionDao?.updatePomodoro(
                     Pomodoro(
-                        homeViewModel.title,
                         sessionTimeSeconds.toInt(),
                         System.currentTimeMillis(),
                         tags,
