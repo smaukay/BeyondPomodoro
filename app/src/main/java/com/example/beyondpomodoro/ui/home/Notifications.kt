@@ -15,6 +15,7 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
         .setOnlyAlertOnce(true)
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
+        println("DEBUG: notify function")
         notify(0, builder.build())
     }
 }
@@ -27,6 +28,7 @@ fun endNotification(context: Context, notificationTitle: String, type: String) {
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
-        notify( 1, builder.build())
+        println("DEBUG: end notify function")
+        notify( 0, builder.build())
     }
 }
