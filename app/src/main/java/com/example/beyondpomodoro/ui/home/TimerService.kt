@@ -18,6 +18,7 @@ class TimerService : LifecycleService() {
         super.onCreate()
         println("DEBUG: service created")
         _timer.state.observe(this, Observer<State> {
+            println("DEBUG: State is $it")
             when(it) {
                 State.COMPLETE -> {
                     with(NotificationManagerCompat.from(this)) {
@@ -29,8 +30,16 @@ class TimerService : LifecycleService() {
                     println("DEBUG: Notifying")
                     endNotification(this, _title, _type)
                 }
-                State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
+                State.ACTIVE_PAUSED -> {
+                    _timer.sessionTimeSecondsLeft.removeObservers(this)
+                    _timer.sessionTimeSecondsLeft.value?.let { it1 ->
+                        persistentTimedNotification(this,
+                            it1, "$_type paused")
+                    }
+                }
+                State.ACTIVE_RUNNING -> {
                     // attach an observer
+                    println("DEBUG: State is active")
                     _timer.sessionTimeSecondsLeft.observe(this, Observer<UInt> {
                         println("DEBUG: observer activated")
                         // update notification
@@ -39,6 +48,11 @@ class TimerService : LifecycleService() {
                 }
                 State.INACTIVE -> {
                     // no notification needed
+                    _timer.sessionTimeSecondsLeft.removeObservers(this)
+                    with(NotificationManagerCompat.from(this)) {
+                        println("DEBUG: removing all notifications")
+                        cancelAll()
+                    }
                     println("DEBUG: no notification")
                 }
             }
