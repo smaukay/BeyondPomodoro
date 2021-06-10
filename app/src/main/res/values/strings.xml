@@ -40,4 +40,7 @@
     <string name="session_already_active_message">The session is already active. You can end it if you like.</string>
     <string name="create_new_session_type">Create new session type</string>
     <string name="hint_activity_name">name this activity</string>
+    <string name="delete_activity_confirmation">Delete this activity?</string>
+    <string name="delete_activity_yes">Yes</string>
+    <string name="delete_activity_cancel">Cancel</string>
 </resources>

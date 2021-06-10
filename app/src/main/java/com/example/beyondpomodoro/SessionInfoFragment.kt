@@ -1,5 +1,7 @@
 package com.example.beyondpomodoro
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -82,7 +84,8 @@ class SessionInfoFragment : Fragment() {
                             e.tags?.toList()?: run{ listOf<String>()})
                     }
 
-                    adapter = MySessionInfoRecyclerViewAdapter(SessionList(sessions!!).items) {
+                    val sessionList = SessionList(sessions!!)
+                    adapter = MySessionInfoRecyclerViewAdapter(sessionList.items, {
                         context.toast("${it.id}, ${it.title}")
 
                         // selected session id saved
@@ -90,7 +93,33 @@ class SessionInfoFragment : Fragment() {
 
                         // navigate to Home Fragment
                         findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
-                    };
+                    }, { sessionType ->
+                        // show confirmation dialog on long click
+                        activity?.let {
+                            // Use the Builder class for convenient dialog construction
+                            val builder = AlertDialog.Builder(it)
+                            builder.setMessage(R.string.delete_activity_confirmation)
+                                .setPositiveButton(R.string.delete_activity_cancel,
+                                    DialogInterface.OnClickListener { dialog, id ->
+                                        // User cancelled the dialog
+                                        // do nothing
+                                    })
+                                .setNegativeButton(R.string.delete_activity_yes,
+                                    DialogInterface.OnClickListener { dialog, id ->
+                                        // remove this item
+                                        recyclerView.adapter?.notifyItemRemoved(sessionList.items.indexOf(sessionType))
+                                        sessionList.items.remove(sessionType)
+
+                                        // remove from database as well
+                                        lifecycleScope.launch {
+                                            sessionDao?.removeSession(sessionType.id.toInt())
+                                        }
+                                    })
+                            // Create the AlertDialog object and return it
+                            builder.create()
+                        }?.show()
+                        true
+                    });
                 }
             }
         }

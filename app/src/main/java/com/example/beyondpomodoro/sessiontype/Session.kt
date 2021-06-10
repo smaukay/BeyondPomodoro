@@ -74,6 +74,9 @@ interface SessionDao {
     @Query("SELECT * FROM session WHERE sid = :sid")
     suspend fun getSession(sid: Int): Session
 
+    @Query("DELETE FROM session WHERE sid = :sid")
+    suspend fun removeSession(sid: Int)
+
     @Query("SELECT title FROM session WHERE sid = :sid")
     fun _getTitle(sid: Int): Flow<String>
 
