@@ -82,7 +82,7 @@ interface SessionDao {
 
     fun getTitle(sid: Int) = _getTitle(sid).distinctUntilChanged()
 
-    @Query("SELECT * FROM session ORDER BY used_at")
+    @Query("SELECT * FROM session ORDER BY used_at DESC")
     suspend fun getSessions(): List<Session>
 }
 
