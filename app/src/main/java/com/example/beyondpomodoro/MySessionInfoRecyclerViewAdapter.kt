@@ -16,7 +16,8 @@ import java.util.*
  */
 class MySessionInfoRecyclerViewAdapter(
     private val values: List<SessionType>,
-    private val listener: (SessionType) -> Unit
+    private val clickListener: (SessionType) -> Unit,
+    private val longClickListener: (SessionType) -> Boolean
 ) : RecyclerView.Adapter<MySessionInfoRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -39,7 +40,10 @@ class MySessionInfoRecyclerViewAdapter(
             acc, e -> "$acc, $e"
         }?: run { "" }
 
-        holder.itemView.setOnClickListener { listener(item) }
+        holder.itemView.setOnClickListener { clickListener(item) }
+
+        holder.itemView.setOnLongClickListener { longClickListener(item) }
+
         holder.sessionInfoTitleEditText.apply {
             var timer: Timer? = null
             doOnTextChanged { text, start, before, count ->
