@@ -38,8 +38,9 @@ open class TimerFragment : Fragment() {
     protected var sessionDao: SessionDao? = null
 
     protected val connection = object: ServiceConnection {
+        private lateinit var binder: TimerService.LocalBinder
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as TimerService.LocalBinder
+            binder = service as TimerService.LocalBinder
             timer = binder.timer
             notificationTitle = {
                 binder.title(it)
@@ -47,12 +48,25 @@ open class TimerFragment : Fragment() {
             type = {
                 binder.type(it)
             }
-            afterServiceConnected()
+            afterServiceConnected {
+                bindCallbacks()
+            }
             println("DEBUG: service connected")
+        }
+
+        fun bindCallbacks() {
+            binder.setCallback ({ millisUntilFinished ->
+                onTick(millisUntilFinished.toUInt())
+            }, {
+                onTimerChange(it.toUInt())
+            }, {
+                changeState(it)
+            })
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             println("DEBUG: service disconnected")
+            binder.setCallback(null, null, null)
         }
     }
 
@@ -78,7 +92,7 @@ open class TimerFragment : Fragment() {
         title = s.title
     }
 
-    open fun afterServiceConnected() {
+    open fun afterServiceConnected(bindCallbacks: () -> Unit) {
         // fetch most recent session
         val cls = this
         lifecycleScope.launch {
@@ -106,19 +120,7 @@ open class TimerFragment : Fragment() {
             println("DEBUG: timer value was ${cls.sessionTimeSeconds}")
 
             addButtons()
-
-            /*
-             * the timer state may be active or inactive
-             * regardless we only care about updating the view elements
-             * so we dont have to do anything special
-             * the observer takes care of updating the visual elements
-             */
-            timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
-                textViewSeconds.text = convertMinutesToDisplayString(it)
-
-                // update visuals
-                updateVisualBlocks(it)
-            })
+            bindCallbacks()
         }
     }
 
@@ -175,52 +177,44 @@ open class TimerFragment : Fragment() {
             endButton = it
         }
 
-       controlButtonAction {
-           startSession()
-       }
+        controlButtonAction {
+            startSession()
+        }
+    }
 
+    private fun onTimerChange(seconds: UInt) {
+        textViewSeconds.apply {
+            text = convertMinutesToDisplayString(seconds)
+        }
+    }
+
+    private fun changeState(state: State) {
         // when timer state changes
-        timer.state.observe(viewLifecycleOwner, {
-            when(it) {
-                State.COMPLETE -> {
-                    onTimerFinish()
-                }
+        when(state) {
+            State.COMPLETE -> {
+                onTimerFinish()
+            }
 
-                State.INACTIVE -> {
-                    startButton.text = view?.context?.getString(R.string.pomodoro_start_session_button)
-                    endButton.visibility = View.VISIBLE
-                    controlButtonAction {
-                        startSession()
-                    }
-                }
-
-                State.ACTIVE_PAUSED -> {
-                    startButton.text = view?.context?.getString(R.string.pomodoro_resume_session_button)
-                    endButton.visibility = View.VISIBLE
-                    controlButtonAction {
-                        startSession()
-                    }
-                }
-
-                State.ACTIVE_RUNNING -> {
-                    startButton.text = view?.context?.getString(R.string.pomodoro_pause_session_button)
+            State.INACTIVE -> {
+                startButton.text = view?.context?.getString(R.string.pomodoro_start_session_button)
+                endButton.visibility = View.VISIBLE
+                controlButtonAction {
+                    startSession()
                 }
             }
-        })
 
-        // when user changes session time
-        timer.sessionTimeSeconds.observe(viewLifecycleOwner, {
-            println("DEBUG: timer set to $it")
-            textViewSeconds.apply {
-                text = convertMinutesToDisplayString(it)
+            State.ACTIVE_PAUSED -> {
+                startButton.text = view?.context?.getString(R.string.pomodoro_resume_session_button)
+                endButton.visibility = View.VISIBLE
+                controlButtonAction {
+                    startSession()
+                }
             }
-        })
 
-        timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, {
-            textViewSeconds.apply {
-                text = convertMinutesToDisplayString(it)
+            State.ACTIVE_RUNNING -> {
+                startButton.text = view?.context?.getString(R.string.pomodoro_pause_session_button)
             }
-        })
+        }
     }
 
     fun controlButtonAction(func: () -> Unit) {
@@ -295,7 +289,15 @@ open class TimerFragment : Fragment() {
     open fun confirmEndSession() {
     }
 
-    open fun updateVisualBlocks(secondsUntilFinished: UInt) {
+    open fun onTick(secondsLeft: UInt) {
+        println("DEBUG: onTick call")
+        textViewSeconds.text = convertMinutesToDisplayString(secondsLeft)
+
+        // update visuals
+        updateVisualBlocks(secondsLeft)
+    }
+
+open fun updateVisualBlocks(secondsUntilFinished: UInt) {
     }
 }
 
