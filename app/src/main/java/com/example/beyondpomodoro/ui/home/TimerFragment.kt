@@ -188,6 +188,10 @@ open class TimerFragment : Fragment() {
         }
     }
 
+    open fun resumeSession() {
+        nextState()
+    }
+
     private fun changeState(state: State) {
         // when timer state changes
         when(state) {
@@ -207,7 +211,7 @@ open class TimerFragment : Fragment() {
                 startButton.text = view?.context?.getString(R.string.pomodoro_resume_session_button)
                 endButton.visibility = View.VISIBLE
                 controlButtonAction {
-                    startSession()
+                    resumeSession()
                 }
             }
 
