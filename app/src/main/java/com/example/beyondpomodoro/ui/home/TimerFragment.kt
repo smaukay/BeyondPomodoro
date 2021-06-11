@@ -267,6 +267,8 @@ open class TimerFragment : Fragment() {
     }
 
     open fun onTimerFinish() {
+        // set timer display to zero
+        textViewSeconds.text = convertMinutesToDisplayString(0u)
     }
 
     open fun saveSession() {
