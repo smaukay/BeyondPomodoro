@@ -19,7 +19,10 @@ class SetTimeDialogFragment(caller: TimerFragment): DialogFragment() {
 
             setOnClickListener {
                 when(minutesEditText.text.isNotEmpty()) {
-                    true -> caller.setSessionTime(minutesEditText.text.toString().toUInt() * 60u)
+                    true -> {
+                        caller.setSessionTime(minutesEditText.text.toString().toUInt() * 60u)
+                        caller.timerReset()
+                    }
                 }
                 dismiss()
             }

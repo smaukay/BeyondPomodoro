@@ -13,7 +13,9 @@ open class HomeViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
-    var numBlocksShow: Int = 9
+    public val numBlocksShow = MutableLiveData<UInt>().apply {
+        value = 9u
+    }
     var imageButtonList: List<ImageView?>? = null
     var tags: MutableMap<String, String> = mutableMapOf()
 

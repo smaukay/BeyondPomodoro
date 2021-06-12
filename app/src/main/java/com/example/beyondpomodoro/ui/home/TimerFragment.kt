@@ -55,18 +55,16 @@ open class TimerFragment : Fragment() {
         }
 
         fun bindCallbacks() {
-            binder.setCallback ({ millisUntilFinished ->
+            timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, { millisUntilFinished ->
                 onTick(millisUntilFinished.toUInt())
-            }, {
-                onTimerChange(it.toUInt())
-            }, {
+            })
+            timer.state.observe(viewLifecycleOwner, {
                 changeState(it)
             })
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
             println("DEBUG: service disconnected")
-            binder.setCallback(null, null, null)
         }
     }
 
@@ -141,15 +139,12 @@ open class TimerFragment : Fragment() {
     open fun addButtons() {
         println("DEBUG: adding buttons")
         val fragment = this
-        view?.findViewWithTag<TextView>("timerDisplay")?.apply {
-            println("DEBUG: textview")
-            text = timer.sessionTimeSeconds.value?.let { convertMinutesToDisplayString(it) }
 
+        view?.findViewWithTag<TextView>("timerDisplay")?.apply {
             // onclick open dialog to enter time
             setOnClickListener {
                 when(timer.state.value) {
                     State.ACTIVE_PAUSED, State.ACTIVE_RUNNING -> {
-                        //TODO: check if this works (i.e. no mutable) when paused
                         val toast = Toast.makeText(
                             view?.context,
                             context.getString(R.string.session_already_active_message),
@@ -177,13 +172,18 @@ open class TimerFragment : Fragment() {
             endButton = it
         }
 
-        controlButtonAction {
-            startSession()
+        view?.findViewWithTag<Button>("startButton")?.apply {
+            startButton = this
+        }
+
+        timer.state.value?.let{
+            changeState(it)
         }
     }
 
-    private fun onTimerChange(seconds: UInt) {
+    protected fun onTimerChange(seconds: UInt) {
         textViewSeconds.apply {
+            println("DEBUG: setting textview to $seconds")
             text = convertMinutesToDisplayString(seconds)
         }
     }
@@ -192,7 +192,11 @@ open class TimerFragment : Fragment() {
         nextState()
     }
 
-    private fun changeState(state: State) {
+    open fun setupVisualBlocks(view: View){
+
+    }
+
+    protected fun changeState(state: State) {
         // when timer state changes
         when(state) {
             State.COMPLETE -> {
@@ -200,8 +204,10 @@ open class TimerFragment : Fragment() {
             }
 
             State.INACTIVE -> {
+                view?.let { setupVisualBlocks(it) }
+                timer.clockReset()
                 startButton.text = view?.context?.getString(R.string.pomodoro_start_session_button)
-                endButton.visibility = View.VISIBLE
+                endButton.visibility = View.INVISIBLE
                 controlButtonAction {
                     startSession()
                 }
@@ -217,6 +223,10 @@ open class TimerFragment : Fragment() {
 
             State.ACTIVE_RUNNING -> {
                 startButton.text = view?.context?.getString(R.string.pomodoro_pause_session_button)
+                controlButtonAction {
+                    startSession()
+                }
+                endButton.visibility = View.INVISIBLE
             }
         }
     }
@@ -256,10 +266,9 @@ open class TimerFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         fetchDao()
         bindService()
+        super.onViewCreated(view, savedInstanceState)
     }
 
     fun buttonsReset() {
@@ -303,7 +312,12 @@ open class TimerFragment : Fragment() {
         updateVisualBlocks(secondsLeft)
     }
 
-open fun updateVisualBlocks(secondsUntilFinished: UInt) {
+    open fun updateVisualBlocks(secondsUntilFinished: UInt) {
+    }
+
+    fun timerReset() {
+        timer.clockReset()
+        timer.pomodoroReset()
     }
 }
 
