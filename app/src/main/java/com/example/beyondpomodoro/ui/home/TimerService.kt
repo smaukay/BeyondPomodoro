@@ -15,7 +15,10 @@ class TimerService : LifecycleService() {
     private val binder = LocalBinder()
 
     fun onTick(secondsUntilFinished: UInt) {
-        persistentTimedNotification(this, secondsUntilFinished, _title)
+        when(_timer.state.value) {
+            State.INACTIVE -> {}
+            else -> persistentTimedNotification(this, secondsUntilFinished, _title)
+        }
     }
 
     override fun onCreate() {
