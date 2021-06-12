@@ -13,28 +13,15 @@ class TimerService : LifecycleService() {
     var _title = ""
     var _type = ""
     private val binder = LocalBinder()
-    private var tickCb: ((Long) -> Unit)? = null
-    private var timerCb: ((Long) -> Unit)? = null
-    private var changeStateCb: ((State) -> Unit)? = null
-    private var isTickActive: Boolean = false
 
     fun onTick(secondsUntilFinished: UInt) {
-        when(isTickActive) {
-            true -> {
-                persistentTimedNotification(this, secondsUntilFinished, _title)
-                tickCb?.let{ func -> func(secondsUntilFinished.toLong()) }
-            }
-            false -> {}
-        }
+        persistentTimedNotification(this, secondsUntilFinished, _title)
     }
 
     override fun onCreate() {
         super.onCreate()
         println("DEBUG: service created")
         _timer.sessionTimeSeconds.observe(this, Observer<UInt> {
-            timerCb?.let { func ->
-                func(it.toLong())
-            }
         })
         _timer.sessionTimeSecondsLeft.observe(this, Observer<UInt>{
             onTick(it)
@@ -46,12 +33,10 @@ class TimerService : LifecycleService() {
                     with(NotificationManagerCompat.from(this)) {
                         cancelAll()
                     }
-                    isTickActive = false
                     println("DEBUG: Notifying")
                     endNotification(this, _title, _type)
                 }
                 State.ACTIVE_PAUSED -> {
-                    isTickActive = false
                     _timer.sessionTimeSecondsLeft.value?.let { it1 ->
                         persistentTimedNotification(this,
                             it1, _title)
@@ -60,7 +45,6 @@ class TimerService : LifecycleService() {
                 State.ACTIVE_RUNNING -> {
                     // attach an observer
                     println("DEBUG: State is active")
-                    isTickActive = true
                 }
                 State.INACTIVE -> {
                     // no notification needed
@@ -68,13 +52,9 @@ class TimerService : LifecycleService() {
                         println("DEBUG: removing all notifications")
                         cancelAll()
                     }
-                    isTickActive = false
                     println("DEBUG: no notification")
                 }
             }
-
-            // required for UI updates
-            changeStateCb?.let { func -> func(it) }
         })
     }
 
@@ -103,14 +83,6 @@ class TimerService : LifecycleService() {
 
     inner class LocalBinder: Binder() {
         val timer = _timer
-
-        fun setCallback(tickCb: ((Long) -> Unit)?,
-                        timerCb: ((Long) -> Unit)?,
-                        changeStateCb: ((State) -> Unit)?) {
-            this@TimerService.tickCb = tickCb
-            this@TimerService.timerCb = timerCb
-            this@TimerService.changeStateCb = changeStateCb
-        }
 
         fun title(s: String) {
             _title = s

@@ -82,11 +82,8 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
     }
 
     fun setSessionTime(s: UInt) {
+        println("DEBUG: setSessionTime $s")
         sessionTimeSeconds.apply {
-            value = s
-        }
-
-        sessionTimeSecondsLeft.apply {
             value = s
         }
     }

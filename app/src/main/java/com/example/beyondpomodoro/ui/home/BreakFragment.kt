@@ -35,10 +35,10 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun addButtons() {
+        super.addButtons()
+        setSessionTime(breakTimeSeconds)
         notificationTitle("Break time. Stretch. Relax. Hydrate.")
         type("Break")
-        timer.setSessionTime(breakTimeSeconds)
-        super.addButtons()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

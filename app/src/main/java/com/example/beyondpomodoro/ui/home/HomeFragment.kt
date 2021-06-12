@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -44,13 +45,12 @@ open class HomeFragment : TimerFragment() {
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
 
     override fun addButtons() {
+        super.addButtons()
+        setSessionTime(sessionTimeSeconds)
         notificationTitle("Session running")
         type("Pomodoro")
-        timer.setSessionTime(sessionTimeSeconds)
         populateTags()
-        super.addButtons()
         view?.let { setupVisualBlocks(it) }
-        updateVisualBlocks(sessionTimeSeconds)
     }
 
     override fun updateTitle(t: String) {
@@ -144,7 +144,14 @@ open class HomeFragment : TimerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        homeViewModel.numBlocksShow.observe(viewLifecycleOwner, Observer<UInt> {numBlocks ->
+            // number of blocks to show changed
+            homeViewModel.imageButtonList?.let { it ->
+                it.subList(numBlocks.toInt(), 9).forEach {
+                    it?.visibility = INVISIBLE
+                }
+            }
+        })
         chipGroup = view.findViewById(R.id.chipGroup)
 
         editTitle = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
@@ -206,7 +213,7 @@ open class HomeFragment : TimerFragment() {
         }
     }
 
-    private fun setupVisualBlocks(view: View) {
+    override fun setupVisualBlocks(view: View) {
         // create array of buttons
         // TODO: setup colour themes etc if needed
         val imageButtonIds = arrayOf(
@@ -292,23 +299,12 @@ open class HomeFragment : TimerFragment() {
         println("DEBUG: calling update visual blocks with $secondsUntilFinished")
         // check if any visualblocks to be disappeared?
 
-        val numBlocksShow = timer.sessionTimeSeconds.value?.let { value ->
-            val res = ceil((secondsUntilFinished.toDouble()/value.toDouble()) * 9f).toInt()
-            println("DEBUG: showing $res blocks since value is $value")
-            res
-        } ?: run {
-            0
+        homeViewModel.numBlocksShow.apply {
+            value = ceil((secondsUntilFinished.toDouble()/secondsUntilFinished.toDouble()) * 9f).toUInt()
+            println("DEBUG: showing $value blocks since value is $secondsUntilFinished")
         }
 
-        if(homeViewModel.numBlocksShow != numBlocksShow) {
-            // number of blocks to show changed
-            homeViewModel.imageButtonList?.let { it ->
-                it.subList(numBlocksShow, 9).forEach {
-                    it?.visibility = INVISIBLE
-                }
-                homeViewModel.numBlocksShow = numBlocksShow
-            }
-        }
+
     }
 
     private fun hideAllVisualBlocks() {
