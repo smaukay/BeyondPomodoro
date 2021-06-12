@@ -188,6 +188,10 @@ open class TimerFragment : Fragment() {
         }
     }
 
+    open fun resumeSession() {
+        nextState()
+    }
+
     open fun setupVisualBlocks(view: View){
 
     }
@@ -213,7 +217,7 @@ open class TimerFragment : Fragment() {
                 startButton.text = view?.context?.getString(R.string.pomodoro_resume_session_button)
                 endButton.visibility = View.VISIBLE
                 controlButtonAction {
-                    startSession()
+                    resumeSession()
                 }
             }
 
