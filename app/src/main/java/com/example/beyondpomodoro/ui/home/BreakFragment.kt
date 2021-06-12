@@ -57,6 +57,7 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun onTimerFinish() {
+        super.onTimerFinish()
         // hide end button
         endButton.visibility = View.INVISIBLE
         controlButtonAction {
