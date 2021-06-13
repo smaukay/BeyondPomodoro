@@ -123,6 +123,7 @@ open class TimerFragment : Fragment() {
                     sessionDao?.getDnd(it)?.let { s ->
                         s.collect { d ->
                             dnd = d
+                            updateDnd(d)
                         }
                     }
                 }
@@ -138,6 +139,10 @@ open class TimerFragment : Fragment() {
             addButtons()
             bindCallbacks()
         }
+    }
+
+    open fun updateDnd(d: Boolean) {
+
     }
 
     open fun updateTitle(t: String) {

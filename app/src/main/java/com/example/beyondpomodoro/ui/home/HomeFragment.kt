@@ -55,6 +55,13 @@ open class HomeFragment : TimerFragment() {
         }
     }
 
+    override fun updateDnd(d: Boolean) {
+        super.updateDnd(d)
+        timer.state.value?.apply{
+            changeState(this)
+        }
+    }
+
     override fun doNotDisturb() {
         super.doNotDisturb()
         println("DEBUG: dnd in homefrag: $dnd")
