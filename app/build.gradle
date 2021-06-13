@@ -15,6 +15,12 @@ android {
         versionName "alpha"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -52,7 +58,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation "androidx.lifecycle:lifecycle-service:2.3.1"
-    def room_version = "2.3.0"
+    def room_version = "2.4.0-alpha01"
 
     apply plugin: 'kotlin-kapt'
     implementation("androidx.room:room-runtime:$room_version")
