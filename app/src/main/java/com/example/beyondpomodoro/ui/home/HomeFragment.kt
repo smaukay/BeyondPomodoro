@@ -3,6 +3,7 @@ package com.example.beyondpomodoro.ui.home
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.media.AudioManager
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.view.LayoutInflater
@@ -21,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
+import com.example.beyondpomodoro.sessiontype.Dnd
 import com.example.beyondpomodoro.sessiontype.Pomodoro
 import com.example.beyondpomodoro.sessiontype.Session
 import com.google.android.material.chip.Chip
@@ -44,6 +46,24 @@ open class HomeFragment : TimerFragment() {
     // tag colours in an array
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
 
+    override fun ringerNormal() {
+        super.ringerNormal()
+        println("DEBUG: dnd in homefrag: $dnd")
+        when(dnd) {
+            true -> (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+            false -> {}
+        }
+    }
+
+    override fun doNotDisturb() {
+        super.doNotDisturb()
+        println("DEBUG: dnd in homefrag: $dnd")
+        when(dnd) {
+            true -> (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+            false -> {}
+        }
+    }
+
     override fun addButtons() {
         super.addButtons()
         setSessionTime(sessionTimeSeconds)
@@ -51,6 +71,19 @@ open class HomeFragment : TimerFragment() {
         type("Pomodoro")
         populateTags()
         view?.let { setupVisualBlocks(it) }
+        view?.findViewById<Switch>(R.id.switch1)?.apply {
+            dnd?.let{
+                isChecked = it
+            }
+            setOnCheckedChangeListener { buttonView, isChecked ->
+                // save preference to database
+                lifecycleScope.launch {
+                    sessionId?.let {
+                        sessionDao?.updateDnd(Dnd(isChecked, it))
+                    }
+                }
+            }
+        }
     }
 
     override fun updateTitle(t: String) {
@@ -268,26 +301,31 @@ open class HomeFragment : TimerFragment() {
         lifecycleScope.launch {
             println("DEBUG: coroutine starting")
 
-            sessionId?.let {
-                sessionDao?.updatePomodoro(
-                    Pomodoro(
-                        sessionTimeSeconds.toInt(),
-                        System.currentTimeMillis(),
-                        tags,
-                        it
+            dnd?.let { dnd ->
+                sessionId?.let {
+                    sessionDao?.updatePomodoro(
+                        Pomodoro(
+                            sessionTimeSeconds.toInt(),
+                            System.currentTimeMillis(),
+                            tags,
+                            dnd,
+                            it
+                        )
                     )
-                )
-            }?: run {
-                // add a new session to database
-                sessionId = sessionDao?.addSession(
-                    Session(homeViewModel.title,
-                        sessionTimeSeconds.toInt(),
-                        300,
-                        System.currentTimeMillis(),
-                        tags
-                    )
-                )?.toInt()
+                }?: run {
+                    // add a new session to database
+                    sessionId = sessionDao?.addSession(
+                        Session(homeViewModel.title,
+                            sessionTimeSeconds.toInt(),
+                            300,
+                            System.currentTimeMillis(),
+                            tags,
+                            dnd
+                        )
+                    )?.toInt()
+                }
             }
+
 
             println("DEBUG: session added to db")
         }

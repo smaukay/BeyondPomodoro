@@ -62,4 +62,14 @@
         tools:layout_conversion_absoluteHeight="23dp"
         tools:layout_conversion_absoluteWidth="101dp" />
 
+    <ImageView
+        android:id="@+id/ringerStatus"
+        android:layout_width="46dp"
+        android:layout_height="18dp"
+        android:paddingLeft="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintStart_toEndOf="@+id/editTextSessionInfoTitle"
+        app:layout_constraintTop_toTopOf="@+id/editTextSessionInfoTitle"
+        app:srcCompat="@android:drawable/ic_lock_silent_mode" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

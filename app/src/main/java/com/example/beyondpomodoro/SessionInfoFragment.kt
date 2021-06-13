@@ -141,7 +141,9 @@ class SessionInfoFragment : Fragment() {
                             e.title?: run {""},
                             e.sessionTime?.toUInt()?.div(60u)?: run {25u},
                             e.breakTime?.toUInt()?.div(60u)?: run {5u},
-                            e.tags?.toList()?: run{ listOf<String>()})
+                            e.tags?.toList()?: run{ listOf<String>()},
+                            e.dnd
+                        )
                     }
 
                     val sessionList = SessionList(sessions!!)

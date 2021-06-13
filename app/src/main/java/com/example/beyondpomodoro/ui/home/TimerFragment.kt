@@ -4,11 +4,9 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Context.AUDIO_SERVICE
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
-import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -47,6 +45,7 @@ open class TimerFragment : Fragment() {
     protected lateinit var notificationTitle: (String) -> Unit
     protected lateinit var type: (String) -> Unit
     protected var sessionDao: SessionDao? = null
+    protected var dnd: Boolean? = null
 
     protected val connection = object: ServiceConnection {
         private lateinit var binder: TimerService.LocalBinder
@@ -99,6 +98,7 @@ open class TimerFragment : Fragment() {
         }
         println("DEBUG: tags found ${tags}")
         title = s.title
+        dnd = s.dnd
     }
 
     open fun afterServiceConnected(bindCallbacks: () -> Unit) {
@@ -119,6 +119,13 @@ open class TimerFragment : Fragment() {
                         }
                     }
                 }
+                lifecycleScope.launch {
+                    sessionDao?.getDnd(it)?.let { s ->
+                        s.collect { d ->
+                            dnd = d
+                        }
+                    }
+                }
             }?: run {
                 sessionDao?.getLatestSession()?.apply {
                     readSession(this)
@@ -134,15 +141,14 @@ open class TimerFragment : Fragment() {
     }
 
     open fun updateTitle(t: String) {
-
     }
 
     open fun doNotDisturb() {
-        (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+        println("DEBUG: dnd: $dnd")
     }
 
     open fun ringerNormal() {
-        (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+        println("DEBUG: dnd: $dnd")
     }
 
     open fun startSession() {
@@ -152,7 +158,6 @@ open class TimerFragment : Fragment() {
             val notificationManager =
                 activity?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             if (notificationManager.isNotificationPolicyAccessGranted) {
-                (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
             } else {
                 // Ask the user to grant access
                 val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)

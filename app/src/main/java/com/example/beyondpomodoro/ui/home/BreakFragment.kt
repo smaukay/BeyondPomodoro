@@ -56,6 +56,11 @@ class BreakFragment : TimerFragment() {
         breakTimeSeconds = s
     }
 
+    override fun doNotDisturb() {
+        super.doNotDisturb()
+        println("DEBUG: break frag dnd")
+    }
+
     override fun onTimerFinish() {
         super.onTimerFinish()
         // hide end button

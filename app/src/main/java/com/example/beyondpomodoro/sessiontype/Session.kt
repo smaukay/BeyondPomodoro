@@ -12,9 +12,9 @@ data class Session (
     @ColumnInfo(name = "break_time") var breakTime: Int?,
     @ColumnInfo(name = "used_at") var usedAt: Long?,
     @ColumnInfo(name = "tags") var tags: Set<String>?,
+    @ColumnInfo(name = "dnd", defaultValue = "false") var dnd: Boolean = false,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 ) {
-    constructor(): this("", 1500, 300, null, null)
 }
 
 data class Title (
@@ -26,6 +26,12 @@ data class Pomodoro (
     @ColumnInfo(name = "session_time") var sessionTime: Int?,
     @ColumnInfo(name = "used_at") var usedAt: Long?,
     @ColumnInfo(name = "tags") var tags: Set<String>?,
+    @ColumnInfo(name = "dnd") var dnd: Boolean = false,
+    @PrimaryKey(autoGenerate = true) val sid: Int = 0
+)
+
+data class Dnd (
+    @ColumnInfo(name = "dnd") var dnd: Boolean,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 )
 
@@ -82,11 +88,24 @@ interface SessionDao {
 
     fun getTitle(sid: Int) = _getTitle(sid).distinctUntilChanged()
 
+    @Query("SELECT dnd FROM session WHERE sid = :sid")
+    fun _getDnd(sid: Int): Flow<Boolean>
+
+    fun getDnd(sid: Int) = _getDnd(sid).distinctUntilChanged()
+
     @Query("SELECT * FROM session ORDER BY used_at DESC")
     suspend fun getSessions(): List<Session>
+
+    @Update(entity = Session::class)
+    suspend fun updateDnd(d: Dnd)
 }
 
-@Database(entities = arrayOf(Session::class), version = 1)
+@Database(
+    entities = arrayOf(Session::class),
+    version = 2,
+    autoMigrations = [ AutoMigration (from = 1, to = 2) ],
+    exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class SessionDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
