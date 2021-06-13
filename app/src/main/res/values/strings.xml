@@ -46,4 +46,5 @@
     <string name="cancel_current_activity_confirmation">There is an activity running already. Do you want to cancel it and start a new one?</string>
     <string name="cancel_activity_no">No</string>
     <string name="cancel_activity_yes">Yes, cancel running activity</string>
+    <string name="pomodoro_discard_session">Discard session</string>
 </resources>
