@@ -1,8 +1,11 @@
 package com.example.beyondpomodoro
 
 import android.view.LayoutInflater
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.RecyclerView
@@ -50,6 +53,12 @@ class MySessionInfoRecyclerViewAdapter(
                 item.title = text.toString()
             }
         }
+        holder.dndPref.apply {
+            visibility = when(item.dnd){
+                true -> VISIBLE
+                false -> INVISIBLE
+            }
+        }
     }
 
     override fun getItemCount(): Int = values.size
@@ -60,9 +69,10 @@ class MySessionInfoRecyclerViewAdapter(
         val sessionInfoBreakTimeView: TextView = binding.textViewSessionInfoBreakTime
         val sessionInfoSessionTimeView: TextView = binding.textViewSessionInfoPomodoroTime
         val sessionInfoTitleEditText: EditText = binding.editTextSessionInfoTitle
+        val dndPref: ImageView = binding.ringerStatus
 
         override fun toString(): String {
-            return super.toString() + " ' ${sessionInfoTitleEditText.toString()}' ${sessionInfoSessionTimeView.toString()} ' ${sessionInfoBreakTimeView.toString()} ' ${tagsTextView.toString()}"
+            return super.toString() + " ' ${sessionInfoTitleEditText.toString()}' ${sessionInfoSessionTimeView.toString()} ' ${sessionInfoBreakTimeView.toString()} ' ${tagsTextView.toString()} ' ${dndPref.isEnabled}"
         }
     }
 }

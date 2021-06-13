@@ -1,17 +1,24 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.app.Activity
+import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -22,7 +29,9 @@ import com.example.beyondpomodoro.sessiontype.SessionDao
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
+
 open class TimerFragment : Fragment() {
+    protected lateinit var dndCheck: ActivityResultLauncher<Intent>
     protected var tags: MutableList<String> = mutableListOf()
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
@@ -36,6 +45,7 @@ open class TimerFragment : Fragment() {
     protected lateinit var notificationTitle: (String) -> Unit
     protected lateinit var type: (String) -> Unit
     protected var sessionDao: SessionDao? = null
+    protected var dnd: Boolean? = null
 
     protected val connection = object: ServiceConnection {
         private lateinit var binder: TimerService.LocalBinder
@@ -88,6 +98,7 @@ open class TimerFragment : Fragment() {
         }
         println("DEBUG: tags found ${tags}")
         title = s.title
+        dnd = s.dnd
     }
 
     open fun afterServiceConnected(bindCallbacks: () -> Unit) {
@@ -108,6 +119,14 @@ open class TimerFragment : Fragment() {
                         }
                     }
                 }
+                lifecycleScope.launch {
+                    sessionDao?.getDnd(it)?.let { s ->
+                        s.collect { d ->
+                            dnd = d
+                            updateDnd(d)
+                        }
+                    }
+                }
             }?: run {
                 sessionDao?.getLatestSession()?.apply {
                     readSession(this)
@@ -122,11 +141,36 @@ open class TimerFragment : Fragment() {
         }
     }
 
-    open fun updateTitle(t: String) {
+    open fun updateDnd(d: Boolean) {
 
     }
 
+    open fun updateTitle(t: String) {
+    }
+
+    open fun doNotDisturb() {
+        println("DEBUG: dnd: $dnd")
+    }
+
+    open fun ringerNormal() {
+        println("DEBUG: dnd: $dnd")
+    }
+
     open fun startSession() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // set DND on
+            val notificationManager =
+                activity?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (notificationManager.isNotificationPolicyAccessGranted) {
+            } else {
+                // Ask the user to grant access
+                val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+
+                dndCheck.launch(intent)
+            }
+        }
+
         println("DEBUG: starting Session")
         nextState()
     }
@@ -219,6 +263,7 @@ open class TimerFragment : Fragment() {
                 controlButtonAction {
                     resumeSession()
                 }
+                ringerNormal()
             }
 
             State.ACTIVE_RUNNING -> {
@@ -227,6 +272,7 @@ open class TimerFragment : Fragment() {
                     startSession()
                 }
                 endButton.visibility = View.INVISIBLE
+                doNotDisturb()
             }
         }
     }
@@ -255,6 +301,19 @@ open class TimerFragment : Fragment() {
     open fun bindService() {
         Intent(context, TimerService::class.java).also { intent ->
             context?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        dndCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
+            when(it.resultCode) {
+                Activity.RESULT_OK -> {
+                    // call dnd now
+                    doNotDisturb()
+                }
+                else -> {}
+            }
         }
     }
 
