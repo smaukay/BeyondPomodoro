@@ -1,17 +1,26 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.app.Activity
+import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Context.AUDIO_SERVICE
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -22,7 +31,9 @@ import com.example.beyondpomodoro.sessiontype.SessionDao
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
+
 open class TimerFragment : Fragment() {
+    protected lateinit var dndCheck: ActivityResultLauncher<Intent>
     protected var tags: MutableList<String> = mutableListOf()
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
@@ -126,7 +137,30 @@ open class TimerFragment : Fragment() {
 
     }
 
+    open fun doNotDisturb() {
+        (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+    }
+
+    open fun ringerNormal() {
+        (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+    }
+
     open fun startSession() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // set DND on
+            val notificationManager =
+                activity?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (notificationManager.isNotificationPolicyAccessGranted) {
+                (activity?.getSystemService(AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+            } else {
+                // Ask the user to grant access
+                val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+
+                dndCheck.launch(intent)
+            }
+        }
+
         println("DEBUG: starting Session")
         nextState()
     }
@@ -219,6 +253,7 @@ open class TimerFragment : Fragment() {
                 controlButtonAction {
                     resumeSession()
                 }
+                ringerNormal()
             }
 
             State.ACTIVE_RUNNING -> {
@@ -227,6 +262,7 @@ open class TimerFragment : Fragment() {
                     startSession()
                 }
                 endButton.visibility = View.INVISIBLE
+                doNotDisturb()
             }
         }
     }
@@ -255,6 +291,19 @@ open class TimerFragment : Fragment() {
     open fun bindService() {
         Intent(context, TimerService::class.java).also { intent ->
             context?.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        dndCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
+            when(it.resultCode) {
+                Activity.RESULT_OK -> {
+                    // call dnd now
+                    doNotDisturb()
+                }
+                else -> {}
+            }
         }
     }
 
