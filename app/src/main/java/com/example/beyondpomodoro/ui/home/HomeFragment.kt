@@ -325,7 +325,14 @@ open class HomeFragment : TimerFragment() {
 
         // hide end button
         startButton.text = view?.context?.getString(R.string.pomodoro_save_session_button)
-        endButton.visibility = INVISIBLE
+        endButton.visibility = VISIBLE
+        endButton.text = view?.context?.getString(R.string.pomodoro_discard_session)
+        endButton.apply {
+            println("DEBUG: end button setting on clicker")
+            setOnClickListener {
+                confirmEndSession()
+            }
+        }
         controlButtonAction {
             saveSession()
         }
