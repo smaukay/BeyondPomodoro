@@ -149,7 +149,6 @@ open class TimerFragment : Fragment() {
     }
 
     open fun updateDnd(d: Boolean) {
-
     }
 
     open fun updateTitle(t: String) {
@@ -163,8 +162,7 @@ open class TimerFragment : Fragment() {
         println("DEBUG: dnd: $dnd")
     }
 
-    open fun startSession() {
-
+    open fun getDndPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // set DND on
             val notificationManager =
@@ -177,7 +175,9 @@ open class TimerFragment : Fragment() {
                 dndCheck.launch(intent)
             }
         }
+    }
 
+    open fun startSession() {
         println("DEBUG: starting Session")
         nextState()
     }

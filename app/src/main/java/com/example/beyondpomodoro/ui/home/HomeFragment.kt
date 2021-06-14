@@ -53,7 +53,10 @@ open class HomeFragment : TimerFragment() {
         super.ringerNormal()
         println("DEBUG: dnd in homefrag: $dnd")
         when(dnd) {
-            true -> (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+            true -> {
+                getDndPermissions()
+                (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+            }
             false -> {}
         }
     }
@@ -74,7 +77,10 @@ open class HomeFragment : TimerFragment() {
         super.doNotDisturb()
         println("DEBUG: dnd in homefrag: $dnd")
         when(dnd) {
-            true -> (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+            true -> {
+                getDndPermissions()
+                (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+            }
             false -> {}
         }
     }
