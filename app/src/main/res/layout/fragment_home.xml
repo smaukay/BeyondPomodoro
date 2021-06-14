@@ -172,7 +172,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="add tags"
+        android:hint="work, team-call, etc."
         android:imeOptions="actionSend"
         android:inputType="text"
         app:layout_constraintBottom_toTopOf="@+id/tableLayout"
@@ -252,5 +252,27 @@
         app:layout_constraintEnd_toEndOf="@+id/activity_name"
         app:layout_constraintStart_toStartOf="@+id/activity_name"
         app:layout_constraintTop_toBottomOf="@+id/activity_name" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:text="tags"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextTags"
+        app:layout_constraintEnd_toStartOf="@+id/editTextTags"
+        app:layout_constraintTop_toTopOf="@+id/editTextTags" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:text="notes"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/editTextTags"
+        app:layout_constraintEnd_toStartOf="@+id/editTextTitle"
+        app:layout_constraintTop_toTopOf="@+id/editTextTitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
