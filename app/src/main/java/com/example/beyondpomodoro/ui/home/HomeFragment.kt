@@ -13,6 +13,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
@@ -35,6 +37,7 @@ open class HomeFragment : TimerFragment() {
 
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
+    protected lateinit var waitForCalendar: ActivityResultLauncher<Intent>
 
     var editTitle: EditText? = null
     var editTags: EditText? = null
@@ -53,6 +56,11 @@ open class HomeFragment : TimerFragment() {
             true -> (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
             false -> {}
         }
+    }
+
+    private fun afterSaveSession() {
+        // after saving we end session anyway
+        endSession()
     }
 
     override fun updateDnd(d: Boolean) {
@@ -126,10 +134,7 @@ open class HomeFragment : TimerFragment() {
             // .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
             // .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
             // .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com")
-        startActivity(intent)
-
-        // after saving we end session anyway
-        endSession()
+        waitForCalendar.launch(intent)
     }
 
     override fun endSession() {
@@ -152,6 +157,12 @@ open class HomeFragment : TimerFragment() {
         sessionTimeSeconds = s
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        waitForCalendar = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
+            afterSaveSession()
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
