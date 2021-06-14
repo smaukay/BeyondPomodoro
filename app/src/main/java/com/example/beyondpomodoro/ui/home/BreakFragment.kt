@@ -3,10 +3,12 @@ package com.example.beyondpomodoro.ui.home
 import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -32,6 +34,8 @@ class BreakFragment : TimerFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
+        println("DEBUG: back handler created")
+        setHasOptionsMenu(true)
     }
 
     override fun addButtons() {
@@ -41,8 +45,32 @@ class BreakFragment : TimerFragment() {
         type("Break")
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        println("DEBUG: what button: $item")
+        if(item.itemId == android.R.id.home) {
+            handleBackButton()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun handleBackButton() {
+        println("DEBUG: handling back press")
+        setSessionTime(sessionTimeSeconds)
+        timerReset()
+        findNavController().popBackStack()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isEnabled) {
+                    isEnabled = false
+                    handleBackButton()
+                }
+            }
+        })
 
         view.findViewById<ImageView>(R.id.breakSprite)?.let {
             // TODO: set sprite based on how well the session went?
