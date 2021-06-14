@@ -109,7 +109,7 @@ open class HomeFragment : TimerFragment() {
 
     override fun updateTitle(t: String) {
         super.updateTitle(t)
-        view?.findViewById<TextView>(R.id.activity_name).apply {
+        view?.findViewById<TextView>(R.id.activityName).apply {
             this?.text = t
         }
     }

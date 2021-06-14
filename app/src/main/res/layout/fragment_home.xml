@@ -233,7 +233,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/activity_name"
+        android:id="@+id/activityName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="34sp"
@@ -249,9 +249,9 @@
         android:fontFamily="sans-serif-light"
         android:text="do not disturb"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="@+id/activity_name"
-        app:layout_constraintStart_toStartOf="@+id/activity_name"
-        app:layout_constraintTop_toBottomOf="@+id/activity_name" />
+        app:layout_constraintEnd_toEndOf="@+id/activityName"
+        app:layout_constraintStart_toStartOf="@+id/activityName"
+        app:layout_constraintTop_toBottomOf="@+id/activityName" />
 
     <TextView
         android:id="@+id/textView7"
