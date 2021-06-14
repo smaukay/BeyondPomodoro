@@ -74,6 +74,8 @@ open class TimerFragment : Fragment() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            timer.sessionTimeSecondsLeft.removeObservers(viewLifecycleOwner)
+            timer.state.removeObservers(viewLifecycleOwner)
             println("DEBUG: service disconnected")
         }
     }
@@ -111,22 +113,7 @@ open class TimerFragment : Fragment() {
                 sessionDao?.getSession(it)?.let { s ->
                     readSession(s)
                 }
-                lifecycleScope.launch {
-                    sessionDao?.getTitle(it)?.let { s ->
-                        s.collect { t ->
-                            title = t
-                            updateTitle(t)
-                        }
-                    }
-                }
-                lifecycleScope.launch {
-                    sessionDao?.getDnd(it)?.let { s ->
-                        s.collect { d ->
-                            dnd = d
-                            updateDnd(d)
-                        }
-                    }
-                }
+
             }?: run {
                 sessionDao?.getLatestSession()?.apply {
                     readSession(this)
@@ -138,6 +125,26 @@ open class TimerFragment : Fragment() {
 
             addButtons()
             bindCallbacks()
+            lifecycleScope.launch {
+                sessionId?.let {
+                    sessionDao?.getTitle(it)?.let { s ->
+                        s.collect { t ->
+                            title = t
+                            updateTitle(t)
+                        }
+                    }
+                }
+            }
+            lifecycleScope.launch {
+                sessionId?.let {
+                    sessionDao?.getDnd(it)?.let { s ->
+                        s.collect { d ->
+                            dnd = d
+                            updateDnd(d)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -326,14 +333,6 @@ open class TimerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    fun buttonsReset() {
-        // endbutton hide
-        endButton.visibility = View.INVISIBLE
-
-        // start button
-        startButton.text = view?.context?.getString(R.string.pomodoro_start_session_button)
-    }
-
     open fun onTimerFinish() {
         // set timer display to zero
         textViewSeconds.text = convertMinutesToDisplayString(0u)
@@ -347,20 +346,15 @@ open class TimerFragment : Fragment() {
     }
 
     open fun endSession() {
+        timerReset()
         addToSessionList()
-        timer.clockReset()
-        textViewSeconds.text = convertMinutesToDisplayString(sessionTimeSeconds)
-        timer.pomodoroReset()
-
-        endButton.visibility = View.INVISIBLE
-        startButton.text = context?.getString(R.string.pomodoro_start_session_button)
     }
 
     open fun confirmEndSession() {
     }
 
     open fun onTick(secondsLeft: UInt) {
-        println("DEBUG: onTick call")
+        println("DEBUG: onTick call with $secondsLeft")
         textViewSeconds.text = convertMinutesToDisplayString(secondsLeft)
 
         // update visuals

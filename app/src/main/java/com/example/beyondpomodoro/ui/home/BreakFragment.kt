@@ -87,10 +87,11 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun endSession() {
-        addToSessionList()
-        timer.clockReset()
-        timer.pomodoroReset()
-        super.buttonsReset()
+        super.endSession()
+        startButton.text = context?.getString(R.string.pomodoro_break_end)
+        endButton.visibility = View.INVISIBLE
+        setSessionTime(sessionTimeSeconds)
+        timerReset()
         backToPomodoro()
     }
 
