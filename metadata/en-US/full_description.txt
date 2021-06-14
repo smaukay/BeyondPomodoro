@@ -1,14 +1,16 @@
-A minimal Android app for Pomodoro sessions with focus on session notes.
+A minimal Pomodoro app with special focus on task notes.
 
 <b>Pomodoro + Timetracking = BeyondPomodoro</b>
-1. Break down a large task into Pomodoro sessions
+1. Break down a large task into timed Pomodoro sessions
 2. Write down your goal for the session
 3. At the end of the session, you can <b>choose</b> to save the session to your calendar
 4. You can also add end of session notes about how the session went
 
 <b>Multiple activities</b>
 * Maintain different work time, break time for each activity
-
-<b>Upcoming</b>
-* Wifi/network preferences for each activity
 * DND preferences for each activity
+
+<b>Privacy focused</b>
+* Your data lives in your calendar, and nowhere else
+* The app never connects to the internet ever
+* Open source, of course 
