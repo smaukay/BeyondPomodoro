@@ -259,7 +259,7 @@
         android:layout_height="wrap_content"
         android:paddingRight="10dp"
         android:text="tags"
-        android:textSize="20sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/editTextTags"
         app:layout_constraintEnd_toStartOf="@+id/editTextTags"
         app:layout_constraintTop_toTopOf="@+id/editTextTags" />
@@ -270,7 +270,7 @@
         android:layout_height="wrap_content"
         android:paddingRight="10dp"
         android:text="notes"
-        android:textSize="20sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/editTextTags"
         app:layout_constraintEnd_toStartOf="@+id/editTextTitle"
         app:layout_constraintTop_toTopOf="@+id/editTextTitle" />
