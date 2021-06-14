@@ -347,8 +347,8 @@ open class TimerFragment : Fragment() {
     }
 
     open fun endSession() {
-        timerReset()
         addToSessionList()
+        timerReset()
     }
 
     open fun confirmEndSession() {
