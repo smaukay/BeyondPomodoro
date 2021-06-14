@@ -223,45 +223,59 @@ open class HomeFragment : TimerFragment() {
         editTags?.setOnEditorActionListener { v, actionId, event ->
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
-                    // add a new chip to the group
-                    val tag = editTags?.text.toString()
-                    when(chipGroup?.children?.toList()?.any { c -> ((c as Chip).text.toString()) == tag }) {
-                        false -> {
-                            val chip = Chip(this.requireContext())
-                            chip.text = tag
-                            chip.isCloseIconVisible = true
-                            chip.setOnCloseIconClickListener { _ ->
-                                // remove chip from chipgroup
-                                chipGroup?.removeView(chip)
-                                tags.remove(v.tag)
-                            }
-                            // TODO: was this tag previously entered?
-                            // if so, what colour was assigned to it?
-                            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                                chip.chipBackgroundColor = if(prefs.contains("tag_colour_${tag}")) {
-                                    ColorStateList.valueOf(prefs.getInt("tag_colour_${tag}", 1))
-                                } else {
-                                    context?.let {
-                                        ContextCompat.getColor(it, tagColours.random() ).let { colourSelect ->
-                                            // save this colour for this tag
-                                            with(prefs.edit()) {
-                                                putInt("tag_colour_${tag}", colourSelect)
-                                                apply()
-                                            }
-                                            ColorStateList.valueOf(colourSelect)
-                                        }
-                                    }
+                    // if comma separated, split them into multiple tags
+                    val tagstr = editTags?.text.toString()
+                    val tagsList = tagstr.split(",")
+                    tagsList.forEach { t ->
+                        val tag = t.trim()
+                        // add a new chip to the group
+                        when (chipGroup?.children?.toList()
+                            ?.any { c -> ((c as Chip).text.toString()) == tag }) {
+                            false -> {
+                                val chip = Chip(this.requireContext())
+                                chip.text = tag
+                                chip.isCloseIconVisible = true
+                                chip.setOnCloseIconClickListener { _ ->
+                                    // remove chip from chipgroup
+                                    chipGroup?.removeView(chip)
+                                    tags.remove(v.tag)
                                 }
+                                // TODO: was this tag previously entered?
+                                // if so, what colour was assigned to it?
+                                activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+                                    chip.chipBackgroundColor =
+                                        if (prefs.contains("tag_colour_${tag}")) {
+                                            ColorStateList.valueOf(
+                                                prefs.getInt(
+                                                    "tag_colour_${tag}",
+                                                    1
+                                                )
+                                            )
+                                        } else {
+                                            context?.let {
+                                                ContextCompat.getColor(it, tagColours.random())
+                                                    .let { colourSelect ->
+                                                        // save this colour for this tag
+                                                        with(prefs.edit()) {
+                                                            putInt(
+                                                                "tag_colour_${tag}",
+                                                                colourSelect
+                                                            )
+                                                            apply()
+                                                        }
+                                                        ColorStateList.valueOf(colourSelect)
+                                                    }
+                                            }
+                                        }
+                                }
+                                tags.add(tag)
+                                chipGroup?.addView(chip)
                             }
-                            tags.add(tag)
-                            chipGroup?.addView(chip)
-                        }
-                        else ->
-                            {
+                            else -> {
                                 // TODO: highlight the chip if already present
                             }
+                        }
                     }
-
                     editTags?.setText("")
                     true
                 }
