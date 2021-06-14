@@ -200,28 +200,22 @@ class SessionInfoFragment : Fragment() {
                             builder.create()
                         }?.show()
                         true
-                    });
+                    }, { item ->
+                        lifecycleScope.launch {
+                            sessionDao?.updateTitle(Title(item.title, item.id.toInt()))
+                        }
+                    })
+                    println("DEBUG: recycler view completely ready")
                 }
             }
         }
+        println("DEBUG: returning recyclerView now")
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bindService()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        println("DEBUG: destorying recycler view... ")
-        println("DEBUG: $sessions")
-        
-        lifecycleScope.launch {
-            sessions?.map {
-                sessionDao?.updateTitle(Title(it.title, it.id.toInt()))
-            }
-        }
     }
 
     companion object {
