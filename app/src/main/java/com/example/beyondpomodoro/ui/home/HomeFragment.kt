@@ -29,7 +29,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.math.ceil
+import kotlin.math.floor
 
 open class HomeFragment : TimerFragment() {
 
@@ -134,12 +134,16 @@ open class HomeFragment : TimerFragment() {
 
     override fun endSession() {
         super.endSession()
-
+        textViewSeconds.text = convertMinutesToDisplayString(sessionTimeSeconds)
+        startButton.text = context?.getString(R.string.pomodoro_start_session_button)
+        endButton.visibility = View.INVISIBLE
         // show all visual image blocks
         showAllVisualBlocks()
 
         // clear title field
         editTitle?.setText("")
+        setSessionTime(breakTimeSeconds)
+        timerReset()
         findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
     }
 
@@ -185,8 +189,12 @@ open class HomeFragment : TimerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         homeViewModel.numBlocksShow.observe(viewLifecycleOwner, Observer<UInt> {numBlocks ->
+            println("DEBUG: Updating visual blocks $numBlocks")
             // number of blocks to show changed
             homeViewModel.imageButtonList?.let { it ->
+                it.subList(0, numBlocks.toInt()).forEach {
+                    it?.visibility = VISIBLE
+                }
                 it.subList(numBlocks.toInt(), 9).forEach {
                     it?.visibility = INVISIBLE
                 }
@@ -341,15 +349,15 @@ open class HomeFragment : TimerFragment() {
     override fun updateVisualBlocks(secondsUntilFinished: UInt) {
         super.updateVisualBlocks(secondsUntilFinished)
 
-        println("DEBUG: calling update visual blocks with $secondsUntilFinished")
+        println("DEBUG: calling update visual blocks with $secondsUntilFinished/${timer.sessionTimeSeconds.value}")
         // check if any visualblocks to be disappeared?
 
         homeViewModel.numBlocksShow.apply {
-            value = ceil((secondsUntilFinished.toDouble()/secondsUntilFinished.toDouble()) * 9f).toUInt()
-            println("DEBUG: showing $value blocks since value is $secondsUntilFinished")
+            val res = this
+            timer.sessionTimeSeconds.value?.toDouble()?.let {
+                res.value = floor((secondsUntilFinished.toDouble()/it) * 9f).toUInt()
+            }
         }
-
-
     }
 
     private fun hideAllVisualBlocks() {

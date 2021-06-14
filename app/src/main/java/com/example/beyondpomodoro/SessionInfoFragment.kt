@@ -154,12 +154,21 @@ class SessionInfoFragment : Fragment() {
                         }
                         else {
                             confirmFirst {
+                                // selected session id saved
+                                sharedData.sid = sessionType.id.toInt()
+
+                                // timer has to be changed accordingly
+                                // so read the session first
+                                lifecycleScope.launch {
+                                    sessionDao?.getSession(sessionType.id.toInt())?.sessionTime?.toUInt()?.apply{
+                                        timer?.setSessionTime(this)
+                                    }
+                                }
+
                                 timer?.clockReset()
                                 timer?.pomodoroReset()
                                 context.toast("${sessionType.id}, ${sessionType.title}")
 
-                                // selected session id saved
-                                sharedData.sid = sessionType.id.toInt()
 
                                 // navigate to Home Fragment
                                 findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
