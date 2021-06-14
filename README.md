@@ -76,11 +76,8 @@ We don't plan on implementing blacklisting of apps. This feature basically preve
 # Future scope
 We also wish these features could be included but are not right now
 
-## Do-not-disturb preferences for each activity 📳
-This is a common feature which is extremely useful. Unfortunaltely Android 10 no longer allows apps to directly change these settings. An app can only show you the relevant setting and ask you to manually choose. Of course this can get repetitive since it is at the start of each session.
-
 ## wifi/network settings 📶
-This is again extremely useful but once again we cannot currently: same reason as above.
+This is a common feature which is extremely useful. Unfortunaltely Android 10 no longer allows apps to directly change these settings. An app can only show you the relevant setting and ask you to manually choose. Of course this can get repetitive since it is at the start of each session.
 
 # Artwork
 Thanks to [bakudas](https://bakudas.itch.io/) for the sprites used in the Break screen.
