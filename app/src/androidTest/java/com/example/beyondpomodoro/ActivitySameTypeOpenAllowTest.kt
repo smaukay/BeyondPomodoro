@@ -132,12 +132,7 @@ withId(R.id.sessionListConstraintLayout),
         recyclerView.perform(actionOnItemAtPosition<ViewHolder>(0, ViewActionClickRecyclerViewItem()))
         
         val materialButton2 = onView(
-allOf(withId(android.R.id.button1), withText("No"),
-childAtPosition(
-childAtPosition(
-withClassName(`is`("android.widget.ScrollView")),
-0),
-0)))
+allOf(withId(android.R.id.button1), withText("No")))
         materialButton2.perform(scrollTo(), click())
         
         val recyclerView2 = onView(

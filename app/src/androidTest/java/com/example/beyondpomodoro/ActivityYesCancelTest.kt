@@ -86,12 +86,7 @@ isDisplayed()))
         floatingActionButton2.perform(click())
         
         val materialButton2 = onView(
-allOf(withId(android.R.id.button2), withText("Yes, cancel running activity"),
-childAtPosition(
-childAtPosition(
-withClassName(`is`("android.widget.ScrollView")),
-0),
-1)))
+allOf(withId(android.R.id.button2), withText("Yes, cancel running activity")))
         materialButton2.perform(scrollTo(), click())
         
         val button = onView(
