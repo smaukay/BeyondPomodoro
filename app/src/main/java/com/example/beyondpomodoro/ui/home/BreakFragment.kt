@@ -118,7 +118,7 @@ class BreakFragment : TimerFragment() {
         super.endSession()
         startButton.text = context?.getString(R.string.pomodoro_break_end)
         endButton.visibility = View.INVISIBLE
-        setSessionTime(sessionTimeSeconds)
+        super.setSessionTime(sessionTimeSeconds)
         timerReset()
         backToPomodoro()
     }
@@ -147,6 +147,8 @@ class BreakFragment : TimerFragment() {
                     )
                 )
             }
+            println("DEBUG: break $breakTimeSeconds saved")
+            println("DEBUG: session is ${sessionDao?.getLatestSession()}")
         }
     }
 }

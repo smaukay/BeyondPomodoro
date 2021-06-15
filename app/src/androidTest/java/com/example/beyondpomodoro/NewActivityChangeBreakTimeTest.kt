@@ -19,6 +19,7 @@ import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.TypeSafeMatcher
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,6 +32,14 @@ class NewActivityChangeBreakTimeTest {
     @JvmField
     var mActivityTestRule = ActivityTestRule(MainActivity::class.java)
 
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val dao = SessionDatabase.getInstance(context).sessionDao()
+    @Before
+    fun clearDb() {
+        runBlocking {
+            SessionDatabase.getInstance(context).clearAllTables()
+        }
+    }
     @Test
     fun newActivityChangeBreakTimeTest() {
         val floatingActionButton = onView(

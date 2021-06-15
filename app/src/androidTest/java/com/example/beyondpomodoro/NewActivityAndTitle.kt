@@ -19,6 +19,7 @@ import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.TypeSafeMatcher
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,40 +32,19 @@ class NewActivityAndTitle {
     @JvmField
     var mActivityTestRule = ActivityTestRule(MainActivity::class.java)
 
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val dao = SessionDatabase.getInstance(context).sessionDao()
+    @Before
+    fun clearDb() {
+        runBlocking {
+            SessionDatabase.getInstance(context).clearAllTables()
+        }
+    }
     @Test
     fun newActivityAndTitle() {
         val floatingActionButton = onView(
-allOf(withId(R.id.newSessionTypeButton), withContentDescription("Create new session type"),
-childAtPosition(
-allOf(withId(R.id.sessionListConstraintLayout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-1),
-isDisplayed()))
+            withId(R.id.newSessionTypeButton))
         floatingActionButton.perform(click())
-        
-        val appCompatEditText = onView(
-allOf(withId(R.id.editTextTags),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-2),
-isDisplayed()))
-        appCompatEditText.perform(replaceText("tag1, tag2"), closeSoftKeyboard())
-        
-        val appCompatEditText2 = onView(
-allOf(withId(R.id.editTextTags), withText("tag1, tag2"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-2),
-isDisplayed()))
-        appCompatEditText2.perform(pressImeActionButton())
         
         val materialButton = onView(
 allOf(withId(R.id.button), withText("Start"),

@@ -153,7 +153,7 @@ open class HomeFragment : TimerFragment() {
 
         // clear title field
         editTitle?.setText("")
-        setSessionTime(breakTimeSeconds)
+        super.setSessionTime(breakTimeSeconds)
         timerReset()
         findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
     }
