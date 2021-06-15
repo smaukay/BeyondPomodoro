@@ -169,6 +169,7 @@ withParent(allOf(withId(R.id.chipGroup),
 withParent(withId(R.id.home_layout)))),
 isDisplayed()))
         button3.check(matches(isDisplayed()))
+
         }
     
     private fun childAtPosition(

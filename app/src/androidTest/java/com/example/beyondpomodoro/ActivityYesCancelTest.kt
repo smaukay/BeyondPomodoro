@@ -1,24 +1,20 @@
 package com.example.beyondpomodoro
 
 
-import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
-import com.example.beyondpomodoro.sessiontype.SessionDatabase
-import kotlinx.coroutines.runBlocking
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import org.hamcrest.Matchers.*
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.allOf
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
 import org.junit.Test
@@ -26,20 +22,14 @@ import org.junit.runner.RunWith
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
-class NewActivityThenDeleteTest {
+class ActivityYesCancelTest {
 
     @Rule
     @JvmField
     var mActivityTestRule = ActivityTestRule(MainActivity::class.java)
 
     @Test
-    fun newActivityThenDeleteTest() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val dao = SessionDatabase.getInstance(context).sessionDao()
-        val numActivitys = runBlocking {
-            dao.getSessions().size
-        }
-
+    fun activityYesCancelTest() {
         val floatingActionButton = onView(
 allOf(withId(R.id.newSessionTypeButton), withContentDescription("Create new session type"),
 childAtPosition(
@@ -50,6 +40,17 @@ withId(R.id.nav_host_fragment_content_main),
 1),
 isDisplayed()))
         floatingActionButton.perform(click())
+        
+        val materialButton = onView(
+allOf(withId(R.id.button), withText("Start"),
+childAtPosition(
+allOf(withId(R.id.home_layout),
+childAtPosition(
+withId(R.id.nav_host_fragment_content_main),
+0)),
+4),
+isDisplayed()))
+        materialButton.perform(click())
         
         val appCompatImageButton = onView(
 allOf(withContentDescription("Open navigation drawer"),
@@ -73,30 +74,32 @@ withId(R.id.nav_view),
 isDisplayed()))
         navigationMenuItemView.perform(click())
         
-        val recyclerView = onView(
-allOf(withId(R.id.sessionListFragment),
+        val floatingActionButton2 = onView(
+allOf(withId(R.id.newSessionTypeButton), withContentDescription("Create new session type"),
 childAtPosition(
-withId(R.id.sessionListConstraintLayout),
-0)))
-        recyclerView.perform(
-            actionOnItemAtPosition<ViewHolder>(0,
-            ViewActionLongClickRecyclerViewItem()
-                )
-            )
+allOf(withId(R.id.sessionListConstraintLayout),
+childAtPosition(
+withId(R.id.nav_host_fragment_content_main),
+0)),
+1),
+isDisplayed()))
+        floatingActionButton2.perform(click())
         
-        val materialButton = onView(
-allOf(withId(android.R.id.button2), withText("Yes"),
+        val materialButton2 = onView(
+allOf(withId(android.R.id.button2), withText("Yes, cancel running activity"),
 childAtPosition(
 childAtPosition(
 withClassName(`is`("android.widget.ScrollView")),
 0),
-2)))
-        materialButton.perform(scrollTo(), click())
-
-        runBlocking {
-            assertThat(dao.getSessions().size, equalTo(numActivitys))
-        }
-
+1)))
+        materialButton2.perform(scrollTo(), click())
+        
+        val button = onView(
+allOf(withId(R.id.button), withText("START"),
+withParent(allOf(withId(R.id.home_layout),
+withParent(withId(R.id.nav_host_fragment_content_main)))),
+isDisplayed()))
+        button.check(matches(isDisplayed()))
         }
     
     private fun childAtPosition(
