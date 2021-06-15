@@ -143,12 +143,7 @@ isDisplayed()))
         materialButton3.perform(click())
         
         val materialButton4 = onView(
-allOf(withId(android.R.id.button2), withText("Discard"),
-childAtPosition(
-childAtPosition(
-withClassName(`is`("android.widget.ScrollView")),
-0),
-2)))
+allOf(withId(android.R.id.button2), withText("Discard")))
         materialButton4.perform(scrollTo(), click())
         }
     
