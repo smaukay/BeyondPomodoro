@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Espresso Automated UI tests
 
 # Controls when the action will run. 
 on:
@@ -47,4 +47,8 @@ jobs:
           arch: x86
           profile: Nexus 6
           disable-animations: true
-          script: ./gradlew connectedCheck --stacktrace
+          run: |
+            adb shell settings put global window_animation_scale 0.0
+            adb shell settings put global transition_animation_scale 0.0
+            adb shell settings put global animator_duration_scale 0.0
+            ./gradlew connectedCheck --stacktrace
