@@ -36,7 +36,7 @@ data class Dnd (
 )
 
 data class Break (
-    @ColumnInfo(name = "break_time") var sessionTime: Int?,
+    @ColumnInfo(name = "break_time") var breakTime: Int?,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 )
 
