@@ -27,6 +27,7 @@ import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.example.beyondpomodoro.sessiontype.Dnd
 import com.example.beyondpomodoro.sessiontype.Pomodoro
 import com.example.beyondpomodoro.sessiontype.Session
+import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
@@ -41,7 +42,7 @@ open class HomeFragment : TimerFragment() {
 
     var editTitle: EditText? = null
     var editTags: EditText? = null
-    var chipGroup: ChipGroup? = null
+    var chipGroup: FlexboxLayout? = null
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -185,21 +186,7 @@ open class HomeFragment : TimerFragment() {
         println("DEBUG: tags already found: ${tags.size}")
 
         tags.forEach {
-            val chip = Chip(this.requireContext())
-            chip.text = it
-            chip.isCloseIconVisible = true
-            chip.setOnCloseIconClickListener { view ->
-                // remove chip from chipgroup
-                chipGroup?.removeView(chip)
-                tags.remove(it)
-            }
-
-            activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                if(prefs.contains("tag_colour_${it}")) {
-                    chip.chipBackgroundColor = ColorStateList.valueOf(prefs.getInt("tag_colour_${it}", 1))
-                }
-            }
-            chipGroup?.addView(chip)
+            handleTags(it)
         }
     }
 
@@ -217,7 +204,6 @@ open class HomeFragment : TimerFragment() {
                 }
             }
         })
-        chipGroup = view.findViewById(R.id.chipGroup)
 
         editTitle = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
             setText("")
@@ -225,24 +211,66 @@ open class HomeFragment : TimerFragment() {
                 title = text.toString()
             }
         }
-        editTags = view.findViewById(R.id.editTextTags)
-        editTags?.setOnFocusChangeListener { v, hasFocus ->
-            when(hasFocus) {
-                false -> {
-                    handleTags((v as EditText).text.toString())
-                }
-            }
+
+        editTags = view.findViewById<EditText>(R.id.editTextTags).apply {
         }
         editTags?.setOnEditorActionListener { v, actionId, event ->
+            println("DEBUG: actionId: $actionId")
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
-                    handleTags(editTags?.text.toString())
+                    val s = editTags?.text.toString()
+                    println("DEBUG: Tags $s")
+                    handleTags(s)
                     true
                 }
                 else -> {
                     false
                 }
             }
+        }
+        chipGroup = view.findViewById<FlexboxLayout>(R.id.recipient_group_FL)
+   }
+
+    private fun addNewChip(userTag: String, chipGroup: FlexboxLayout) {
+        val chip = Chip(context)
+        chip.text = userTag
+        // chip.chipIcon = ContextCompat.getDrawable(requireContext(), R.mipmap.ic_launcher_round)
+        chip.isCloseIconEnabled = true
+        chip.isClickable = true
+        chip.isCheckable = false
+        chipGroup.addView(chip as View, chipGroup.childCount - 1)
+        chip.setOnCloseIconClickListener { chipGroup.removeView(chip as View) }
+        tags.add(userTag)
+    }
+
+    private fun getTagColour(s: String): ColorStateList {
+        // if so, what colour was assigned to it?
+        return activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+            if (prefs.contains("tag_colour_${tag}")) {
+                ColorStateList.valueOf(
+                    prefs.getInt(
+                        "tag_colour_${tag}",
+                        1
+                    )
+                )
+            } else {
+                context?.let {
+                    ContextCompat.getColor(it, tagColours.random())
+                        .let { colourSelect ->
+                            // save this colour for this tag
+                            with(prefs.edit()) {
+                                putInt(
+                                    "tag_colour_${tag}",
+                                    colourSelect
+                                )
+                                apply()
+                            }
+                            ColorStateList.valueOf(colourSelect)
+                        }
+                }
+            }
+        }?: run {
+            ColorStateList.valueOf(0)
         }
     }
 
@@ -251,51 +279,19 @@ open class HomeFragment : TimerFragment() {
         val tagsList = s.split(",")
         tagsList.forEach { t ->
             val tag = t.trim()
+            if (tag.isEmpty()) {
+                return@forEach
+            }
             // add a new chip to the group
-            when (chipGroup?.children?.toList()
-                ?.any { c -> ((c as Chip).text.toString()) == tag }) {
+            when (tags.any { c -> c == tag }) {
                 false -> {
-                    val chip = Chip(this.requireContext())
-                    chip.text = tag
-                    chip.isCloseIconVisible = true
-                    chip.setOnCloseIconClickListener { _ ->
-                        // remove chip from chipgroup
-                        chipGroup?.removeView(chip)
-                        tags.remove(tag)
+                    chipGroup?.let {
+                        addNewChip(tag, it)
                     }
-                    // TODO: was this tag previously entered?
-                    // if so, what colour was assigned to it?
-                    activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-                        chip.chipBackgroundColor =
-                            if (prefs.contains("tag_colour_${tag}")) {
-                                ColorStateList.valueOf(
-                                    prefs.getInt(
-                                        "tag_colour_${tag}",
-                                        1
-                                    )
-                                )
-                            } else {
-                                context?.let {
-                                    ContextCompat.getColor(it, tagColours.random())
-                                        .let { colourSelect ->
-                                            // save this colour for this tag
-                                            with(prefs.edit()) {
-                                                putInt(
-                                                    "tag_colour_${tag}",
-                                                    colourSelect
-                                                )
-                                                apply()
-                                            }
-                                            ColorStateList.valueOf(colourSelect)
-                                        }
-                                }
-                            }
-                    }
+
                     tags.add(tag)
-                    chipGroup?.addView(chip)
                 }
                 else -> {
-                    // TODO: highlight the chip if already present
                 }
             }
         }
@@ -344,37 +340,32 @@ open class HomeFragment : TimerFragment() {
         }
 
         println("DEBUG: adding to session list")
-        // get tags
-        val tags = view?.let {
-            it.findViewById<ChipGroup>(R.id.chipGroup).children.toList().map { e ->
-                (e as Chip).text.toString()
-            }.toSet()
-        }?: run {
-            setOf<String>()
-        }
 
         lifecycleScope.launch {
-            println("DEBUG: coroutine starting")
+            println("DEBUG: coroutine starting with dnd: $dnd")
 
             dnd?.let { dnd ->
                 sessionId?.let {
+                    println("DEBUG: session exists: ${sessionDao?.getSession(sessionId!!)}")
+                    println("DEBUG: Updating with tags: $tags")
                     sessionDao?.updatePomodoro(
                         Pomodoro(
                             sessionTimeSeconds.toInt(),
                             System.currentTimeMillis(),
-                            tags,
+                            tags.toSet(),
                             dnd,
                             it
                         )
                     )
                 }?: run {
                     // add a new session to database
+                    println("DEBUG: adding new session")
                     sessionId = sessionDao?.addSession(
                         Session(homeViewModel.title,
                             sessionTimeSeconds.toInt(),
                             300,
                             System.currentTimeMillis(),
-                            tags,
+                            tags.toSet(),
                             dnd
                         )
                     )?.toInt()

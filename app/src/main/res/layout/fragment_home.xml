@@ -11,6 +11,38 @@
     android:focusableInTouchMode="true"
     tools:context=".ui.home.HomeFragment">
 
+    <LinearLayout
+        android:id="@+id/flexboxHolder"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextTitle">
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/recipient_group_FL"
+            style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            app:alignContent="space_around"
+            app:alignItems="stretch"
+            app:flexWrap="wrap"
+            app:showDivider="beginning|middle|end">
+
+            <EditText
+                android:id="@+id/editTextTags"
+                android:layout_width="200dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:imeOptions="actionSend"
+                android:inputType="text"
+                app:layout_flexGrow="1" />
+
+        </com.google.android.flexbox.FlexboxLayout>
+    </LinearLayout>
+
     <TableLayout
         android:id="@+id/tableLayout"
         android:layout_width="wrap_content"
@@ -166,22 +198,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextTags" />
 
-    <EditText
-        android:id="@+id/editTextTags"
-        style="@style/Widget.AppCompat.Light.AutoCompleteTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="work, team-call, etc."
-        android:imeOptions="actionSend"
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/tableLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.752" />
-
     <Button
         android:id="@+id/button4"
         android:layout_width="wrap_content"
@@ -221,16 +237,14 @@
 
     <EditText
         android:id="@+id/editTextTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:ems="10"
+        android:layout_marginTop="96dp"
         android:hint="what's this session about"
         android:inputType="textMultiLine"
-        app:layout_constraintBottom_toTopOf="@+id/editTextTags"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/activityName"
@@ -257,12 +271,13 @@
         android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:clickable="false"
         android:paddingRight="10dp"
         android:text="tags"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextTags"
-        app:layout_constraintEnd_toStartOf="@+id/editTextTags"
-        app:layout_constraintTop_toTopOf="@+id/editTextTags" />
+        app:layout_constraintBottom_toBottomOf="@+id/flexboxHolder"
+        app:layout_constraintEnd_toStartOf="@+id/flexboxHolder"
+        app:layout_constraintTop_toTopOf="@+id/flexboxHolder" />
 
     <TextView
         android:id="@+id/textView8"
