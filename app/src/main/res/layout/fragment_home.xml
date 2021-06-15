@@ -28,14 +28,15 @@
             android:layout_gravity="center_vertical"
             app:alignContent="space_around"
             app:alignItems="stretch"
-            app:flexWrap="wrap"
+            app:flexWrap="wrap_reverse"
             app:showDivider="beginning|middle|end">
 
             <EditText
                 android:id="@+id/editTextTags"
-                android:layout_width="200dp"
+                android:layout_width="250dp"
                 android:layout_height="32dp"
                 android:background="@android:color/transparent"
+                android:hint="work, conference-call, etc."
                 android:imeOptions="actionSend"
                 android:inputType="text"
                 app:layout_flexGrow="1" />
@@ -190,14 +191,6 @@
 
     </TableLayout>
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextTags" />
-
     <Button
         android:id="@+id/button4"
         android:layout_width="wrap_content"
@@ -239,7 +232,7 @@
         android:id="@+id/editTextTitle"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="96dp"
+        android:layout_marginTop="48dp"
         android:hint="what's this session about"
         android:inputType="textMultiLine"
         app:layout_constraintEnd_toEndOf="parent"
@@ -286,7 +279,7 @@
         android:paddingRight="10dp"
         android:text="notes"
         android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@+id/editTextTags"
+        app:layout_constraintBottom_toTopOf="@+id/flexboxHolder"
         app:layout_constraintEnd_toStartOf="@+id/editTextTitle"
         app:layout_constraintTop_toTopOf="@+id/editTextTitle" />
 

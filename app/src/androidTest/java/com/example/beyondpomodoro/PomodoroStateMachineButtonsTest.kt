@@ -43,51 +43,31 @@ isDisplayed()))
         
         val button = onView(
 allOf(withId(R.id.button), withText("START"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button.check(matches(isDisplayed()))
         
         val materialButton = onView(
 allOf(withId(R.id.button), withText("Start"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton.perform(click())
         
         val button2 = onView(
 allOf(withId(R.id.button), withText("PAUSE"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button2.check(matches(isDisplayed()))
         
         val materialButton2 = onView(
 allOf(withId(R.id.button), withText("Pause"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton2.perform(click())
         
         val button3 = onView(
 allOf(withId(R.id.button), withText("RESUME"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button3.check(matches(isDisplayed()))
         
         val button4 = onView(
 allOf(withId(R.id.button4), withText("END"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button4.check(matches(isDisplayed()))
         button4.perform(click())

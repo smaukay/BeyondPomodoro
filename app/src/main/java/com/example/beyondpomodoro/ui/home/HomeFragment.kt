@@ -16,7 +16,6 @@ import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.view.children
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -29,7 +28,6 @@ import com.example.beyondpomodoro.sessiontype.Pomodoro
 import com.example.beyondpomodoro.sessiontype.Session
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
 import java.util.*
 import kotlin.math.floor
@@ -127,7 +125,7 @@ open class HomeFragment : TimerFragment() {
         homeViewModel.sessionEndTimeMillis = Calendar.getInstance().timeInMillis
 
         // create a calendar event description from tags added
-        var descriptionSuggestion = view?.findViewById<ChipGroup>(R.id.chipGroup)?.children?.toList()?.map { c -> (c as Chip).text.toString() }?.reduceOrNull { acc, c -> "$acc, $c" }
+        var descriptionSuggestion = tags.reduceOrNull { acc, c -> "$acc, $c" }
         if (descriptionSuggestion.isNullOrBlank()) {
             descriptionSuggestion = ""
         }

@@ -16,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Rule
@@ -46,12 +45,6 @@ isDisplayed()))
         
         val materialTextView = onView(
 allOf(withId(R.id.textView2), withText("25:00"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-5),
 isDisplayed()))
         materialTextView.perform(click())
         
@@ -79,44 +72,22 @@ isDisplayed()))
         
         val materialButton2 = onView(
 allOf(withId(R.id.button), withText("Start"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton2.perform(click())
         
         val materialButton3 = onView(
 allOf(withId(R.id.button), withText("Pause"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton3.perform(click())
         
         val materialButton4 = onView(
 allOf(withId(R.id.button4), withText("End"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-3),
 isDisplayed()))
         materialButton4.perform(click())
         
         val materialButton5 = onView(
 allOf(withId(android.R.id.button2), withText("Discard"),
-childAtPosition(
-childAtPosition(
-withClassName(`is`("android.widget.ScrollView")),
-0),
-2)))
+))
         materialButton5.perform(scrollTo(), click())
         runBlocking {
             println("DEBUG: Running Dbtest")

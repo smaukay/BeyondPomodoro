@@ -93,12 +93,6 @@ isDisplayed()))
         
         val materialButton = onView(
 allOf(withId(R.id.button), withText("Start"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton.perform(click())
         
@@ -144,23 +138,11 @@ withId(R.id.sessionListConstraintLayout),
         
         val materialButton3 = onView(
 allOf(withId(R.id.button), withText("Pause"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton3.perform(click())
         
         val materialButton4 = onView(
 allOf(withId(R.id.button4), withText("End"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-3),
 isDisplayed()))
         materialButton4.perform(click())
         

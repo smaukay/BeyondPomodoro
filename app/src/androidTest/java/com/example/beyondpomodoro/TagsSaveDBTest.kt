@@ -15,7 +15,6 @@ import com.example.beyondpomodoro.sessiontype.SessionDatabase
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.TypeSafeMatcher
@@ -63,45 +62,24 @@ isDisplayed()))
         )
 
         val materialButton = onView(
-            allOf(withId(R.id.button), withText("Start"),
-                childAtPosition(
-                    allOf(withId(R.id.home_layout),
-                        childAtPosition(
-                            withId(R.id.nav_host_fragment_content_main),
-                            0)),
-                    4),
+            allOf(
+                withId(R.id.button), withText("Start"),
                 isDisplayed()))
         materialButton.perform(click())
 
         val materialButton2 = onView(
             allOf(withId(R.id.button), withText("Pause"),
-                childAtPosition(
-                    allOf(withId(R.id.home_layout),
-                        childAtPosition(
-                            withId(R.id.nav_host_fragment_content_main),
-                            0)),
-                    4),
                 isDisplayed()))
         materialButton2.perform(click())
 
         val materialButton3 = onView(
             allOf(withId(R.id.button4), withText("End"),
-                childAtPosition(
-                    allOf(withId(R.id.home_layout),
-                        childAtPosition(
-                            withId(R.id.nav_host_fragment_content_main),
-                            0)),
-                    3),
                 isDisplayed()))
         materialButton3.perform(click())
 
         val materialButton4 = onView(
-            allOf(withId(android.R.id.button2), withText("Discard"),
-                childAtPosition(
-                    childAtPosition(
-                        withClassName(Matchers.`is`("android.widget.ScrollView")),
-                        0),
-                    2)))
+            allOf(withId(android.R.id.button2), withText("Discard")
+                    ))
         materialButton4.perform(scrollTo(), click())
 
         runBlocking {

@@ -43,12 +43,6 @@ isDisplayed()))
         
         val materialButton = onView(
 allOf(withId(R.id.button), withText("Start"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton.perform(click())
         
@@ -91,8 +85,6 @@ allOf(withId(android.R.id.button2), withText("Yes, cancel running activity")))
         
         val button = onView(
 allOf(withId(R.id.button), withText("START"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button.check(matches(isDisplayed()))
         }

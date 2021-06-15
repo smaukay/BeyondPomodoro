@@ -61,12 +61,6 @@ isDisplayed()))
         
         val materialButton = onView(
 allOf(withId(R.id.button), withText("Start"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton.perform(click())
         
@@ -116,40 +110,22 @@ withId(R.id.sessionListConstraintLayout),
         
         val button = onView(
 allOf(withId(R.id.button), withText("PAUSE"),
-withParent(allOf(withId(R.id.home_layout),
-withParent(withId(R.id.nav_host_fragment_content_main)))),
 isDisplayed()))
         button.check(matches(isDisplayed()))
         
         val materialButton3 = onView(
 allOf(withId(R.id.button), withText("Pause"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-4),
 isDisplayed()))
         materialButton3.perform(click())
         
         val materialButton4 = onView(
 allOf(withId(R.id.button4), withText("End"),
-childAtPosition(
-allOf(withId(R.id.home_layout),
-childAtPosition(
-withId(R.id.nav_host_fragment_content_main),
-0)),
-3),
 isDisplayed()))
         materialButton4.perform(click())
         
         val materialButton5 = onView(
 allOf(withId(android.R.id.button2), withText("Discard"),
-childAtPosition(
-childAtPosition(
-withClassName(`is`("android.widget.ScrollView")),
-0),
-2)))
+))
         materialButton5.perform(scrollTo(), click())
         }
     
