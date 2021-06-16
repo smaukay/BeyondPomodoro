@@ -41,7 +41,7 @@ class BreakFragment : TimerFragment() {
     override fun addButtons() {
         super.addButtons()
         setSessionTime(breakTimeSeconds)
-        notificationTitle("Break time. Stretch. Relax. Hydrate.")
+        notificationTitle(getString(R.string.notification_break_message))
         type("Break")
     }
 

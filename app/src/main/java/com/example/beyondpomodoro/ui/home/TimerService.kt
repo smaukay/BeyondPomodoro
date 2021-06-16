@@ -17,7 +17,7 @@ class TimerService : LifecycleService() {
     fun onTick(secondsUntilFinished: UInt) {
         when(_timer.state.value) {
             State.INACTIVE -> {}
-            else -> persistentTimedNotification(this, secondsUntilFinished, _title)
+            else -> persistentTimedNotification(this, secondsUntilFinished, _title, _type)
         }
     }
 
@@ -42,7 +42,7 @@ class TimerService : LifecycleService() {
                 State.ACTIVE_PAUSED -> {
                     _timer.sessionTimeSecondsLeft.value?.let { it1 ->
                         persistentTimedNotification(this,
-                            it1, _title)
+                            it1, _title, _type)
                     }
                 }
                 State.ACTIVE_RUNNING -> {
