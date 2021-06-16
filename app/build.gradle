@@ -10,6 +10,7 @@ android {
     defaultConfig {
         applicationId "com.smaukay.beyondpomodoro"
         minSdkVersion 16
+        testBuildType "staging"
         targetSdkVersion 30
         versionCode 1
         versionName "alpha"
@@ -28,6 +29,14 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        debug {}
+
+        staging {
+            initWith(buildTypes.debug)
+            defaultConfig.minSdkVersion 19
+        }
+
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -45,6 +54,7 @@ android {
 }
 
 dependencies {
+    androidTestImplementation 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.5.0'
