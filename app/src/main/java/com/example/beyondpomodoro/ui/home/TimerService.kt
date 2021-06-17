@@ -1,6 +1,8 @@
 package com.example.beyondpomodoro.ui.home
 
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Binder
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
@@ -8,7 +10,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
 
 class TimerService : LifecycleService() {
-
+    private var receiver: BroadcastReceiver? = null
     var _timer: PomodoroTimer = PomodoroTimer(1500u)
     var _title = ""
     var _type = ""
@@ -17,13 +19,22 @@ class TimerService : LifecycleService() {
     fun onTick(secondsUntilFinished: UInt) {
         when(_timer.state.value) {
             State.INACTIVE -> {}
-            else -> persistentTimedNotification(this, secondsUntilFinished, _title, _type)
+            else -> persistentTimedNotification(this, secondsUntilFinished, _title, _type, _timer.state.value?: run {State.INACTIVE})
         }
     }
 
     override fun onCreate() {
         super.onCreate()
         println("DEBUG: service created")
+        receiver = TimerActions().apply {
+            timer = _timer
+        }
+        registerReceiver(receiver, IntentFilter().apply{
+            addAction("com.smaukay.beyondpomodoro.Pause")
+            addAction("com.smaukay.beyondpomodoro.Resume")
+            addAction("com.smaukay.beyondpomodoro.Open")
+            addAction("com.smaukay.beyondpomodoro.Start")
+        })
         _timer.sessionTimeSeconds.observe(this, Observer<UInt> {
         })
         _timer.sessionTimeSecondsLeft.observe(this, Observer<UInt>{
@@ -42,7 +53,7 @@ class TimerService : LifecycleService() {
                 State.ACTIVE_PAUSED -> {
                     _timer.sessionTimeSecondsLeft.value?.let { it1 ->
                         persistentTimedNotification(this,
-                            it1, _title, _type)
+                            it1, _title, _type, it)
                     }
                 }
                 State.ACTIVE_RUNNING -> {
