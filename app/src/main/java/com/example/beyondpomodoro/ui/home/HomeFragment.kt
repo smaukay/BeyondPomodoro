@@ -183,8 +183,10 @@ open class HomeFragment : TimerFragment() {
         // all existing tags
         println("DEBUG: tags already found: ${tags.size}")
 
-        tags.forEach {
-            handleTags(it)
+        tags.forEach { tag ->
+            chipGroup?.let {
+                addNewChip(tag, it)
+            }
         }
     }
 
@@ -237,8 +239,10 @@ open class HomeFragment : TimerFragment() {
         chip.isClickable = true
         chip.isCheckable = false
         chipGroup.addView(chip as View, chipGroup.childCount - 1)
-        chip.setOnCloseIconClickListener { chipGroup.removeView(chip as View) }
-        tags.add(userTag)
+        chip.setOnCloseIconClickListener {
+            chipGroup.removeView(chip as View)
+            tags.remove(chip.text.toString())
+        }
     }
 
     private fun getTagColour(s: String): ColorStateList {
@@ -275,6 +279,7 @@ open class HomeFragment : TimerFragment() {
     private fun handleTags(s: String) {
         // if comma separated, split them into multiple tags
         val tagsList = s.split(",")
+        println("DEBUG: tagsList: $tagsList")
         tagsList.forEach { t ->
             val tag = t.trim()
             if (tag.isEmpty()) {
