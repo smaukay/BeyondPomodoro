@@ -26,6 +26,7 @@ import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.sessiontype.Session
 import com.example.beyondpomodoro.sessiontype.SessionDao
+import com.example.beyondpomodoro.sessiontype.TagsDao
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,7 @@ open class TimerFragment : Fragment() {
     protected lateinit var notificationTitle: (String) -> Unit
     protected lateinit var type: (String) -> Unit
     protected var sessionDao: SessionDao? = null
+    protected var tagsDao: TagsDao? = null
     protected var dnd: Boolean? = null
 
     protected val connection = object: ServiceConnection {
@@ -299,6 +301,7 @@ open class TimerFragment : Fragment() {
         val db = (activity as MainActivity).db
         println("DEBUG: db: $db")
         sessionDao = db.sessionDao()
+        tagsDao = db.tagsDao()
     }
 
     open fun bindService() {

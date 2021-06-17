@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "35f90df1b11c54e489627465079e3386",
+    "version": 3,
+    "identityHash": "59e1a2b84ecaa53ef4aaef70de15da99",
     "entities": [
       {
         "tableName": "Session",
@@ -63,19 +63,19 @@
       },
       {
         "tableName": "Tags",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`colour` INTEGER NOT NULL, `name` TEXT NOT NULL, `tid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`colour` INTEGER, `name` TEXT, `tid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)",
         "fields": [
           {
             "fieldPath": "colour",
             "columnName": "colour",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "name",
             "columnName": "name",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "tid",
@@ -97,7 +97,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '35f90df1b11c54e489627465079e3386')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59e1a2b84ecaa53ef4aaef70de15da99')"
     ]
   }
 }

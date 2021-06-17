@@ -1,7 +1,10 @@
 package com.example.beyondpomodoro.sessiontype
 
 import android.content.Context
+import android.content.res.ColorStateList
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -16,6 +19,13 @@ data class Session (
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 ) {
 }
+
+@Entity
+data class Tags (
+    @ColumnInfo(name = "colour") var colour: ColorStateList?,
+    @ColumnInfo(name = "name") var name: String?,
+    @PrimaryKey(autoGenerate = true) val tid: Int = 0
+)
 
 data class Title (
     @ColumnInfo(name = "title") var title: String?,
@@ -58,6 +68,28 @@ class Converters {
             false -> setOf<String>()
         }
     }
+
+    @TypeConverter
+    fun fromColorStateList(c: ColorStateList): Int {
+        return c.defaultColor
+    }
+
+    @TypeConverter
+    fun fromInt(i: Int): ColorStateList {
+        return ColorStateList.valueOf(i)
+    }
+}
+
+@Dao
+interface TagsDao {
+    @Query("SELECT colour FROM tags WHERE name = :name")
+    suspend fun getTagColour(name: String): ColorStateList
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addTag(t: Tags): Long
+
+    @Query("SELECT COUNT() FROM tags WHERE name = :name")
+    suspend fun exists(name: String): Int
 }
 
 @Dao
@@ -101,14 +133,18 @@ interface SessionDao {
 }
 
 @Database(
-    entities = arrayOf(Session::class),
-    version = 2,
-    autoMigrations = [ AutoMigration (from = 1, to = 2) ],
+    entities = arrayOf(Session::class, Tags::class),
+    version = 3,
+    autoMigrations = [
+        AutoMigration (from = 1, to = 2),
+//        AutoMigration (from = 2, to = 3)
+                     ],
     exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class SessionDatabase : RoomDatabase() {
     abstract fun sessionDao(): SessionDao
+    abstract fun tagsDao(): TagsDao
     companion object{
         @Volatile
         private var dbInstance: SessionDatabase? = null
@@ -120,7 +156,8 @@ abstract class SessionDatabase : RoomDatabase() {
                         Room.databaseBuilder(
                             context,
                             SessionDatabase::class.java, "session-types"
-                        ).build()
+                        ).addMigrations(MIGRATION_2_3)
+                            .build()
                     }
                     else -> {
                         dbInstance!!
@@ -140,4 +177,10 @@ abstract class SessionDatabase : RoomDatabase() {
         }
     }
 
+}
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE `Tags` (`name` TEXT, `colour` INTEGER, `tid` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT); ")
+    }
 }

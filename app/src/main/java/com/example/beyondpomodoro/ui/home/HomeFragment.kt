@@ -26,6 +26,7 @@ import com.example.beyondpomodoro.databinding.FragmentHomeBinding
 import com.example.beyondpomodoro.sessiontype.Dnd
 import com.example.beyondpomodoro.sessiontype.Pomodoro
 import com.example.beyondpomodoro.sessiontype.Session
+import com.example.beyondpomodoro.sessiontype.Tags
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
@@ -238,6 +239,7 @@ open class HomeFragment : TimerFragment() {
         chip.isCloseIconEnabled = true
         chip.isClickable = true
         chip.isCheckable = false
+        setTagColour(userTag, chip)
         chipGroup.addView(chip as View, chipGroup.childCount - 1)
         chip.setOnCloseIconClickListener {
             chipGroup.removeView(chip as View)
@@ -245,35 +247,61 @@ open class HomeFragment : TimerFragment() {
         }
     }
 
-    private fun getTagColour(s: String): ColorStateList {
-        // if so, what colour was assigned to it?
-        return activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-            if (prefs.contains("tag_colour_${tag}")) {
-                ColorStateList.valueOf(
-                    prefs.getInt(
-                        "tag_colour_${tag}",
-                        1
+    private fun setTagColour(s: String, c: Chip) {
+
+        // does this tag exist in database?
+        lifecycleScope.launch {
+            var colour = tagsDao?.getTagColour(s)
+            when(colour) {
+                null -> {
+                    // choose colour from list
+                    context?.let {
+                        colour = ColorStateList.valueOf(ContextCompat.getColor(it, tagColours.random()))
+                    }
+                    println("DEBUG: adding colour $colour")
+                    tagsDao?.addTag(
+                        Tags(
+                            colour,
+                            s
+                        )
                     )
-                )
-            } else {
-                context?.let {
-                    ContextCompat.getColor(it, tagColours.random())
-                        .let { colourSelect ->
-                            // save this colour for this tag
-                            with(prefs.edit()) {
-                                putInt(
-                                    "tag_colour_${tag}",
-                                    colourSelect
-                                )
-                                apply()
-                            }
-                            ColorStateList.valueOf(colourSelect)
-                        }
+                }
+                else -> {
+                    colour
                 }
             }
-        }?: run {
-            ColorStateList.valueOf(0)
+
+            c.chipBackgroundColor = colour
         }
+
+        // if so, what colour was assigned to it?
+        // return activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
+        //     if (prefs.contains("tag_colour_${tag}")) {
+        //         ColorStateList.valueOf(
+        //             prefs.getInt(
+        //                 "tag_colour_${tag}",
+        //                 1
+        //             )
+        //         )
+        //     } else {
+        //         context?.let {
+        //             ContextCompat.getColor(it, tagColours.random())
+        //                 .let { colourSelect ->
+        //                     // save this colour for this tag
+        //                     with(prefs.edit()) {
+        //                         putInt(
+        //                             "tag_colour_${tag}",
+        //                             colourSelect
+        //                         )
+        //                         apply()
+        //                     }
+        //                     ColorStateList.valueOf(colourSelect)
+        //                 }
+        //         }
+        //     }
+        // }?: run {
+        //     ColorStateList.valueOf(0)
+        // }
     }
 
     private fun handleTags(s: String) {
