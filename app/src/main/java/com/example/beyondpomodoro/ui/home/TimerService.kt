@@ -89,6 +89,7 @@ class TimerService : LifecycleService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(receiver)
         println("DEBUG: service destroyed")
         with(NotificationManagerCompat.from(this)) {
             cancelAll()
