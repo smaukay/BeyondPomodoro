@@ -26,6 +26,7 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
         .setOngoing(true)
         .setOnlyAlertOnce(true)
         .setContentIntent(
+            // Create the TaskStackBuilder
             NavDeepLinkBuilder(context)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.mobile_navigation)
@@ -49,7 +50,7 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
 
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
-        println("DEBUG: notify function")
+
         notify(0, builder.build())
     }
 }
@@ -65,7 +66,7 @@ fun endNotification(context: Context, notificationTitle: String, type: String) {
         )
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
-        println("DEBUG: end notify function")
+
         notify( 0, builder.build())
     }
 }
@@ -87,7 +88,7 @@ fun openApp(context: Context, type: String?): PendingIntent {
 class TimerActions: BroadcastReceiver() {
     var timer: PomodoroTimer? = null
     fun doOnAction(a: String, type: String?, context: Context?) {
-        println("DEBUG: now doing $a on $timer")
+
         when(a) {
             "Pause" -> {
                 timer?.nextState()
@@ -107,10 +108,10 @@ class TimerActions: BroadcastReceiver() {
         }
     }
     override fun onReceive(context: Context?, intent: Intent?) {
-        println("DEBUG: received notification intent")
+
         val action = intent?.action
         val type = intent?.getStringExtra("type")
-        println("DEBUG: received action: $action")
+
         action?.let {
             doOnAction(it.split(".").last(), type, context)
         }

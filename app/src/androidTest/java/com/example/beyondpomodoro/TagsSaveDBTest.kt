@@ -83,8 +83,8 @@ isDisplayed()))
         materialButton4.perform(scrollTo(), click())
 
         runBlocking {
-            println("DEBUG: sessions in db: ${dao.getSessions()}")
-            println("DEBUG: latest session tags is ${dao.getLatestSession().tags}")
+
+
             assertThat(dao.getLatestSession().tags, equalTo(setOf<String>("tag1", "tag2")))
         }
 

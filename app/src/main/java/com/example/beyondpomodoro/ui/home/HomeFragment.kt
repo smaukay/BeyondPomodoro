@@ -51,7 +51,7 @@ open class HomeFragment : TimerFragment() {
 
     override fun ringerNormal() {
         super.ringerNormal()
-        println("DEBUG: dnd in homefrag: $dnd")
+
         when(dnd) {
             true -> {
                 getDndPermissions()
@@ -75,7 +75,7 @@ open class HomeFragment : TimerFragment() {
 
     override fun doNotDisturb() {
         super.doNotDisturb()
-        println("DEBUG: dnd in homefrag: $dnd")
+
         when(dnd) {
             true -> {
                 getDndPermissions()
@@ -182,7 +182,7 @@ open class HomeFragment : TimerFragment() {
 
     fun populateTags() {
         // all existing tags
-        println("DEBUG: tags already found: ${tags.size}")
+
 
         tags.forEach { tag ->
             chipGroup?.let {
@@ -194,7 +194,7 @@ open class HomeFragment : TimerFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         homeViewModel.numBlocksShow.observe(viewLifecycleOwner, Observer<UInt> {numBlocks ->
-            println("DEBUG: Updating visual blocks $numBlocks")
+
             // number of blocks to show changed
             homeViewModel.imageButtonList?.let { it ->
                 it.subList(0, numBlocks.toInt()).forEach {
@@ -216,11 +216,11 @@ open class HomeFragment : TimerFragment() {
         editTags = view.findViewById<EditText>(R.id.editTextTags).apply {
         }
         editTags?.setOnEditorActionListener { v, actionId, event ->
-            println("DEBUG: actionId: $actionId")
+
             return@setOnEditorActionListener when (actionId) {
                 EditorInfo.IME_ACTION_SEND -> {
                     val s = editTags?.text.toString()
-                    println("DEBUG: Tags $s")
+
                     handleTags(s)
                     true
                 }
@@ -258,7 +258,7 @@ open class HomeFragment : TimerFragment() {
                     context?.let {
                         colour = ColorStateList.valueOf(ContextCompat.getColor(it, tagColours.random()))
                     }
-                    println("DEBUG: adding colour $colour")
+
                     tagsDao?.addTag(
                         Tags(
                             colour,
@@ -273,41 +273,12 @@ open class HomeFragment : TimerFragment() {
 
             c.chipBackgroundColor = colour
         }
-
-        // if so, what colour was assigned to it?
-        // return activity?.getPreferences(Context.MODE_PRIVATE)?.let { prefs ->
-        //     if (prefs.contains("tag_colour_${tag}")) {
-        //         ColorStateList.valueOf(
-        //             prefs.getInt(
-        //                 "tag_colour_${tag}",
-        //                 1
-        //             )
-        //         )
-        //     } else {
-        //         context?.let {
-        //             ContextCompat.getColor(it, tagColours.random())
-        //                 .let { colourSelect ->
-        //                     // save this colour for this tag
-        //                     with(prefs.edit()) {
-        //                         putInt(
-        //                             "tag_colour_${tag}",
-        //                             colourSelect
-        //                         )
-        //                         apply()
-        //                     }
-        //                     ColorStateList.valueOf(colourSelect)
-        //                 }
-        //         }
-        //     }
-        // }?: run {
-        //     ColorStateList.valueOf(0)
-        // }
     }
 
     private fun handleTags(s: String) {
         // if comma separated, split them into multiple tags
         val tagsList = s.split(",")
-        println("DEBUG: tagsList: $tagsList")
+
         tagsList.forEach { t ->
             val tag = t.trim()
             if (tag.isEmpty()) {
@@ -366,19 +337,14 @@ open class HomeFragment : TimerFragment() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
         if(timer.state.value == State.INACTIVE) {
-            println("DEBUG: not saving because timer state is ${timer.state.value}")
             return
         }
 
-        println("DEBUG: adding to session list")
+
 
         lifecycleScope.launch {
-            println("DEBUG: coroutine starting with dnd: $dnd")
-
             dnd?.let { dnd ->
                 sessionId?.let {
-                    println("DEBUG: session exists: ${sessionDao?.getSession(sessionId!!)}")
-                    println("DEBUG: Updating with tags: $tags")
                     sessionDao?.updatePomodoro(
                         Pomodoro(
                             sessionTimeSeconds.toInt(),
@@ -390,7 +356,7 @@ open class HomeFragment : TimerFragment() {
                     )
                 }?: run {
                     // add a new session to database
-                    println("DEBUG: adding new session")
+
                     sessionId = sessionDao?.addSession(
                         Session(homeViewModel.title,
                             sessionTimeSeconds.toInt(),
@@ -404,14 +370,14 @@ open class HomeFragment : TimerFragment() {
             }
 
 
-            println("DEBUG: session added to db")
+
         }
     }
 
     override fun updateVisualBlocks(secondsUntilFinished: UInt) {
         super.updateVisualBlocks(secondsUntilFinished)
 
-        println("DEBUG: calling update visual blocks with $secondsUntilFinished/${timer.sessionTimeSeconds.value}")
+
         // check if any visualblocks to be disappeared?
 
         homeViewModel.numBlocksShow.apply {
@@ -443,7 +409,7 @@ open class HomeFragment : TimerFragment() {
         endButton.visibility = VISIBLE
         endButton.text = view?.context?.getString(R.string.pomodoro_discard_session)
         endButton.apply {
-            println("DEBUG: end button setting on clicker")
+
             setOnClickListener {
                 confirmEndSession()
             }

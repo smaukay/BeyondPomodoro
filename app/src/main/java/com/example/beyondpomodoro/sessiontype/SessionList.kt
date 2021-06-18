@@ -57,7 +57,7 @@ data class SessionType(
     val dnd: Boolean
 ) {
     override fun toString(): String =
-        "$serial, $title, $onTime, $offTime. ${tags.reduceOrNull{
+        "$serial, $id, $title, $onTime, $offTime. ${tags.reduceOrNull{
             acc, e -> "$acc, $e"
         }}, $dnd"
 }

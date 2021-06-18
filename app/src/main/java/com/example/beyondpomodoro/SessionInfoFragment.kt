@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -17,10 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.VERTICAL
 import androidx.recyclerview.widget.RecyclerView
 import com.example.beyondpomodoro.sessiontype.*
-import com.example.beyondpomodoro.ui.home.PomodoroTimer
-import com.example.beyondpomodoro.ui.home.SharedViewModel
-import com.example.beyondpomodoro.ui.home.State
-import com.example.beyondpomodoro.ui.home.TimerService
+import com.example.beyondpomodoro.ui.home.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
@@ -40,7 +36,7 @@ class SessionInfoFragment : Fragment() {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             binder = service as TimerService.LocalBinder
             timer = binder.timer
-            println("DEBUG: service connected")
+
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -48,7 +44,6 @@ class SessionInfoFragment : Fragment() {
         }
     }
 
-    protected val sharedData: SharedViewModel by activityViewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,7 +63,7 @@ class SessionInfoFragment : Fragment() {
         lifecycleScope.launch {
             // check if a session already active?
             if (timer?.state?.value != State.INACTIVE) {
-                val runningSession = sharedData.sid?.let {
+                val runningSession = getRunningActivityId(activity)?.let {
                     sessionDao?.getSession(it)
                 }
                 activity?.let {
@@ -112,9 +107,14 @@ class SessionInfoFragment : Fragment() {
                     timer?.clockReset()
                     timer?.pomodoroReset()
                     lifecycleScope.launch {
-                        sharedData.sid = sessionDao?.addSession(
+                        sessionDao?.addSession(
                             Session("", 1500, 300, null, setOf<String>())
-                        )?.toInt()
+                        )?.toInt()?.let { it1 ->
+                            setRunningActivityId(
+                                activity,
+                                it1
+                            )
+                        }
                         findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
                     }
                 }
@@ -136,7 +136,8 @@ class SessionInfoFragment : Fragment() {
                 lifecycleScope.launch {
                     sessionDao = (activity as MainActivity).db.sessionDao()
                     sessions = sessionDao?.getSessions()?.mapIndexed {idx, e ->
-                        SessionType(idx.toUInt(),
+
+                        val res = SessionType(idx.toUInt(),
                             e.sid.toString(),
                             e.title?: run {""},
                             e.sessionTime?.toUInt()?.div(60u)?: run {25u},
@@ -144,31 +145,33 @@ class SessionInfoFragment : Fragment() {
                             e.tags?.toList()?: run{ listOf<String>()},
                             e.dnd
                         )
+
+                        res
                     }
 
                     val sessionList = SessionList(sessions!!)
+
                     adapter = MySessionInfoRecyclerViewAdapter(sessionList.items, {sessionType ->
-                        if (sharedData.sid == sessionType.id.toInt()) {
+                        if (getRunningActivityId(activity) == sessionType.id.toInt()) {
                             // navigate to Home Fragment
                             findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
                         }
                         else {
                             confirmFirst {
                                 // selected session id saved
-                                sharedData.sid = sessionType.id.toInt()
+                                setRunningActivityId(activity, sessionType.id.toInt())
 
                                 // timer has to be changed accordingly
                                 // so read the session first
                                 lifecycleScope.launch {
-                                    sessionDao?.getSession(sessionType.id.toInt())?.sessionTime?.toUInt()?.apply{
+                                    val selectedSession = sessionDao?.getSession(sessionType.id.toInt())
+                                    selectedSession?.sessionTime?.toUInt()?.apply{
                                         timer?.setSessionTime(this)
                                     }
                                 }
-
                                 timer?.clockReset()
                                 timer?.pomodoroReset()
                                 context.toast("${sessionType.id}, ${sessionType.title}")
-
 
                                 // navigate to Home Fragment
                                 findNavController().navigate(R.id.action_sessionInfoFragment_to_pomodoroFragment)
@@ -205,11 +208,11 @@ class SessionInfoFragment : Fragment() {
                             sessionDao?.updateTitle(Title(item.title, item.id.toInt()))
                         }
                     })
-                    println("DEBUG: recycler view completely ready")
+
                 }
             }
         }
-        println("DEBUG: returning recyclerView now")
+
         return view
     }
 
