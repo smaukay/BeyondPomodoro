@@ -48,6 +48,7 @@ class TimerService : LifecycleService() {
                         cancelAll()
                     }
 
+                    setRingerNormal(this)
                     endNotification(this, _title, _type)
                 }
                 State.ACTIVE_PAUSED -> {
