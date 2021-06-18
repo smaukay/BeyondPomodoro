@@ -25,7 +25,7 @@ class TimerService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        println("DEBUG: service created")
+
         receiver = TimerActions().apply {
             timer = _timer
         }
@@ -41,13 +41,13 @@ class TimerService : LifecycleService() {
             onTick(it)
         })
         _timer.state.observe(this, Observer<State> {
-            println("DEBUG: State is $it")
+
             when(it) {
                 State.COMPLETE -> {
                     with(NotificationManagerCompat.from(this)) {
                         cancelAll()
                     }
-                    println("DEBUG: Notifying")
+
                     endNotification(this, _title, _type)
                 }
                 State.ACTIVE_PAUSED -> {
@@ -58,15 +58,15 @@ class TimerService : LifecycleService() {
                 }
                 State.ACTIVE_RUNNING -> {
                     // attach an observer
-                    println("DEBUG: State is active")
+
                 }
                 State.INACTIVE -> {
                     // no notification needed
                     with(NotificationManagerCompat.from(this)) {
-                        println("DEBUG: removing all notifications")
+
                         cancelAll()
                     }
-                    println("DEBUG: no notification")
+
                 }
             }
         })
@@ -78,19 +78,19 @@ class TimerService : LifecycleService() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        println("DEBUG: unbind called")
+
         return super.onUnbind(intent)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("DEBUG: service started")
+
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(receiver)
-        println("DEBUG: service destroyed")
+
         with(NotificationManagerCompat.from(this)) {
             cancelAll()
         }

@@ -34,7 +34,7 @@ class BreakFragment : TimerFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(BreakViewModel::class.java)
-        println("DEBUG: back handler created")
+
         setHasOptionsMenu(true)
     }
 
@@ -46,7 +46,7 @@ class BreakFragment : TimerFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        println("DEBUG: what button: $item")
+
         if(item.itemId == android.R.id.home) {
             handleBackButton()
             return true
@@ -55,7 +55,7 @@ class BreakFragment : TimerFragment() {
     }
 
     private fun handleBackButton() {
-        println("DEBUG: handling back press")
+
         setSessionTime(sessionTimeSeconds)
         timerReset()
         findNavController().popBackStack()
@@ -86,7 +86,7 @@ class BreakFragment : TimerFragment() {
 
     override fun doNotDisturb() {
         super.doNotDisturb()
-        println("DEBUG: break frag dnd")
+
     }
 
     override fun onTimerFinish() {
@@ -134,7 +134,7 @@ class BreakFragment : TimerFragment() {
         // did user start this session?
         // if so, then either the session is currrently paused or it's running
         if (timer.state.value == State.INACTIVE) {
-            println("DEBUG: not saving")
+
             return
         }
 
@@ -147,8 +147,8 @@ class BreakFragment : TimerFragment() {
                     )
                 )
             }
-            println("DEBUG: break $breakTimeSeconds saved")
-            println("DEBUG: session is ${sessionDao?.getLatestSession()}")
+
+
         }
     }
 }

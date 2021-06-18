@@ -54,7 +54,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
             }
         }
         state.value = state.value?.nextState()
-        println("DEBUG: state changed to ${state.value}")
+
     }
 
     fun pomodoroReset() {
@@ -82,7 +82,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
     }
 
     fun setSessionTime(s: UInt) {
-        println("DEBUG: setSessionTime $s")
+
         sessionTimeSeconds.apply {
             value = s
         }
@@ -97,7 +97,7 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
     private fun countDownTimerCreate(millisLeft: Long) {
         countDownTimer = object: CountDownTimer(millisLeft, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                println("DEBUG: still ticking... ")
+
                 updateVisualBlocks(millisUntilFinished)
             }
 

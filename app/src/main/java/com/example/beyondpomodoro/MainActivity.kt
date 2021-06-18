@@ -26,9 +26,15 @@ class MainActivity : AppCompatActivity() {
     protected lateinit var timerViewModel: TimerViewModel
     lateinit var db: SessionDatabase
 
+    override fun onDestroy() {
+        super.onDestroy()
+        println("DEBUG: destorying activity")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        println("DEBUG: Creating activity")
         db = SessionDatabase.getInstance(this)
 
         // create timer service

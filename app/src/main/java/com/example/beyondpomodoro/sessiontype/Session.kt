@@ -164,7 +164,7 @@ abstract class SessionDatabase : RoomDatabase() {
                     }
                 }
             }
-            println("DEBUG: database build complete")
+
             return dbInstance!!
         }
 

@@ -90,12 +90,12 @@ allOf(withId(android.R.id.button2), withText("Discard"),
 ))
         materialButton5.perform(scrollTo(), click())
         runBlocking {
-            println("DEBUG: Running Dbtest")
+
             val context = ApplicationProvider.getApplicationContext<Context>()
             val dao = SessionDatabase.getInstance(context).sessionDao()
-            println("DEBUG: ${dao.getSessions()}")
+
             val session = dao.getLatestSession()
-            println("DEBUG: checkDb $session")
+
             session.sessionTime?.let { assertThat(it, Matchers.equalTo(35 * 60)) }?: run{ assert(false)}
             session.breakTime?.let { assertThat(it, Matchers.equalTo(300)) }?: run{ assert(false)}
             session.title?.let { assertThat(it, Matchers.equalTo("")) }?: run{ assert(false)}

@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
@@ -63,7 +62,7 @@ open class TimerFragment : Fragment() {
             afterServiceConnected {
                 bindCallbacks()
             }
-            println("DEBUG: service connected")
+
         }
 
         fun bindCallbacks() {
@@ -78,11 +77,10 @@ open class TimerFragment : Fragment() {
         override fun onServiceDisconnected(name: ComponentName?) {
             timer.sessionTimeSecondsLeft.removeObservers(viewLifecycleOwner)
             timer.state.removeObservers(viewLifecycleOwner)
-            println("DEBUG: service disconnected")
+
         }
     }
 
-    protected val sharedData: SharedViewModel by activityViewModels()
     companion object {
     }
 
@@ -92,26 +90,26 @@ open class TimerFragment : Fragment() {
     }
 
     open fun readSession(s: Session) {
+
         sessionTimeSeconds = s.sessionTime?.toUInt() ?: run { 1500u }
         breakTimeSeconds = s.breakTime?.toUInt() ?: run { 300u }
         sessionId = s.sid
-        println("DEBUG: tags found ${this.tags}")
+
         tags.clear()
         s.tags?.map {
             tags.add(it)
         }
-        println("DEBUG: tags found ${tags}")
+
         title = s.title
         dnd = s.dnd
+
     }
 
     open fun afterServiceConnected(bindCallbacks: () -> Unit) {
         // fetch most recent session
-        val cls = this
         lifecycleScope.launch {
-            println("DEBUG: launching after service connected coroutine")
-            sharedData.sid?.let {
-                println("DEBUG: sid has been set")
+
+            getRunningActivityId(activity)?.let {
                 sessionDao?.getSession(it)?.let { s ->
                     readSession(s)
                 }
@@ -119,11 +117,12 @@ open class TimerFragment : Fragment() {
             }?: run {
                 sessionDao?.getLatestSession()?.apply {
                     readSession(this)
+                    sessionId?.let { setRunningActivityId(activity, it) }
                 }
             }
 
-            println("DEBUG: sid found: ${cls.sessionId}")
-            println("DEBUG: timer value was ${cls.sessionTimeSeconds}")
+
+
 
             addButtons()
             bindCallbacks()
@@ -157,11 +156,11 @@ open class TimerFragment : Fragment() {
     }
 
     open fun doNotDisturb() {
-        println("DEBUG: dnd: $dnd")
+
     }
 
     open fun ringerNormal() {
-        println("DEBUG: dnd: $dnd")
+
     }
 
     open fun getDndPermissions() {
@@ -180,17 +179,17 @@ open class TimerFragment : Fragment() {
     }
 
     open fun startSession() {
-        println("DEBUG: starting Session")
+
         nextState()
     }
 
     open fun setSessionTime(s: UInt) {
-        println("DEBUG: setting session time to $s")
+
         timer.setSessionTime(s)
     }
 
     open fun addButtons() {
-        println("DEBUG: adding buttons")
+
         val fragment = this
 
         view?.findViewWithTag<TextView>("timerDisplay")?.apply {
@@ -217,7 +216,7 @@ open class TimerFragment : Fragment() {
         }
 
         view?.findViewWithTag<Button>("endButton")?.apply {
-            println("DEBUG: endbutton")
+
             setOnClickListener {
                 confirmEndSession()
             }
@@ -236,7 +235,7 @@ open class TimerFragment : Fragment() {
 
     protected fun onTimerChange(seconds: UInt) {
         textViewSeconds.apply {
-            println("DEBUG: setting textview to $seconds")
+
             text = convertMinutesToDisplayString(seconds)
         }
     }
@@ -293,13 +292,13 @@ open class TimerFragment : Fragment() {
     }
 
     open fun nextState() {
-        println("DEBUG: state ${timer.state.value}, ${startButton.text}")
+
         timer.nextState()
     }
 
     open fun fetchDao() {
         val db = (activity as MainActivity).db
-        println("DEBUG: db: $db")
+
         sessionDao = db.sessionDao()
         tagsDao = db.tagsDao()
     }
@@ -358,7 +357,7 @@ open class TimerFragment : Fragment() {
     }
 
     open fun onTick(secondsLeft: UInt) {
-        println("DEBUG: onTick call with $secondsLeft")
+
         textViewSeconds.text = convertMinutesToDisplayString(secondsLeft)
 
         // update visuals
