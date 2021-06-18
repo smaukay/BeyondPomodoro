@@ -1,1 +1,1 @@
-Pomodoro sessions with focus on session notes.
+Pomodoro + Time Tracker. Use as a Pomodoro app. Add session notes. Privacy focused = your data in your calendar.
