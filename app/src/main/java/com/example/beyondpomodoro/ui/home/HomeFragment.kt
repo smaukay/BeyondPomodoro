@@ -1,9 +1,8 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.util.Log
@@ -16,6 +15,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Observer
@@ -46,13 +46,19 @@ open class HomeFragment : TimerFragment() {
     // tag colours in an array
     private val tagColours = listOf(R.color.tag_1, R.color.tag_2, R.color.tag_3, R.color.tag_4, R.color.tag_5)
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun ringerNormal() {
         super.ringerNormal()
 
         when(dnd) {
             true -> {
-                getDndPermissions()
-                (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+                if(hasDndPermissions()) {
+                    _setRingerNormal()
+                } else {
+                    getDndPermissions {
+                        ringerCheck.launch(it)
+                    }
+                }
             }
             false -> {}
         }
@@ -68,20 +74,33 @@ open class HomeFragment : TimerFragment() {
         timer.state.value?.apply{
             changeState(this)
         }
+
+        activity?.findViewById<Switch>(R.id.switch1)?.apply {
+            isChecked = d
+        }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun doNotDisturb() {
         super.doNotDisturb()
 
         when(dnd) {
             true -> {
-                getDndPermissions()
-                (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+                Log.d("TimerFragment", "dnd set is requested by user")
+                if (hasDndPermissions()) {
+                    _doNotDisturb()
+                }
+                else {
+                    getDndPermissions {
+                        dndCheck.launch(it)
+                    }
+                }
             }
             false -> {}
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun addButtons() {
         super.addButtons()
         setSessionTime(sessionTimeSeconds)
@@ -98,6 +117,11 @@ open class HomeFragment : TimerFragment() {
                 lifecycleScope.launch {
                     sessionId.let {
                         sessionDao?.updateDnd(Dnd(isChecked, it))
+
+                        if(!isChecked) {
+                            // DND has been switched off
+                            ringerNormal()
+                        }
                     }
                 }
             }
@@ -156,6 +180,7 @@ open class HomeFragment : TimerFragment() {
         sessionTimeSeconds = s
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         waitForCalendar = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {

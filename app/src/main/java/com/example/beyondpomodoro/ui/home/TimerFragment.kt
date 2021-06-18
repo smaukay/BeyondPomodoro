@@ -1,16 +1,17 @@
 package com.example.beyondpomodoro.ui.home
 
-import android.app.Activity
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,10 +20,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.beyondpomodoro.MainActivity
 import com.example.beyondpomodoro.R
+import com.example.beyondpomodoro.sessiontype.Dnd
 import com.example.beyondpomodoro.sessiontype.Session
 import com.example.beyondpomodoro.sessiontype.SessionDao
 import com.example.beyondpomodoro.sessiontype.TagsDao
@@ -33,6 +36,7 @@ import kotlin.properties.Delegates
 
 open class TimerFragment : Fragment() {
     protected lateinit var dndCheck: ActivityResultLauncher<Intent>
+    protected lateinit var ringerCheck: ActivityResultLauncher<Intent>
     protected var tags: MutableList<String> = mutableListOf()
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
@@ -164,19 +168,22 @@ open class TimerFragment : Fragment() {
 
     }
 
-    open fun getDndPermissions() {
+    @RequiresApi(Build.VERSION_CODES.M)
+    open fun hasDndPermissions(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // set DND on
             val notificationManager =
                 activity?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            if (notificationManager.isNotificationPolicyAccessGranted) {
-            } else {
-                // Ask the user to grant access
-                val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-
-                dndCheck.launch(intent)
-            }
+            return notificationManager.isNotificationPolicyAccessGranted
+        } else {
+            return true
         }
+    }
+
+    open fun getDndPermissions(ifAllowed: (Intent) -> Unit) {
+        // set DND on
+        // Ask the user to grant access
+        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        ifAllowed(intent)
     }
 
     open fun startSession() {
@@ -236,7 +243,6 @@ open class TimerFragment : Fragment() {
 
     protected fun onTimerChange(seconds: UInt) {
         textViewSeconds.apply {
-
             text = convertMinutesToDisplayString(seconds)
         }
     }
@@ -260,6 +266,7 @@ open class TimerFragment : Fragment() {
                 controlButtonAction {
                     startSession()
                 }
+                ringerNormal()
             }
 
             State.ACTIVE_PAUSED -> {
@@ -310,15 +317,53 @@ open class TimerFragment : Fragment() {
         }
     }
 
+    fun _setRingerNormal() {
+        Log.d("TimerFragment", "Setting ringer normal")
+        (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_NORMAL
+    }
+
+    fun _doNotDisturb() {
+        Log.d("TimerFragment", "Setting dnd")
+        (activity?.getSystemService(Context.AUDIO_SERVICE) as AudioManager).ringerMode = AudioManager.RINGER_MODE_SILENT
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dndCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
-            when(it.resultCode) {
-                Activity.RESULT_OK -> {
+            Log.d("TimerFragment", "time to set dnd")
+            when(hasDndPermissions()) {
+                true -> {
                     // call dnd now
-                    doNotDisturb()
+                    _doNotDisturb()
                 }
-                else -> {}
+                false -> {
+                    Log.d("TimerFragment", "cannot set dnd, setting back to false")
+                    // save preference to database
+                    lifecycleScope.launch {
+                        sessionId.let {
+                            sessionDao?.updateDnd(Dnd(false, it))
+                        }
+                    }
+                }
+            }
+        }
+        ringerCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
+            Log.d("TimerFragment", "time to set ringer on")
+            when(hasDndPermissions()) {
+                true -> {
+                    // set ringer normal
+                    _setRingerNormal()
+                }
+                false -> {
+                    Log.d("TimerFragment", "cannot set dnd, setting back to false")
+                    // save preference to database
+                    lifecycleScope.launch {
+                        sessionId.let {
+                            sessionDao?.updateDnd(Dnd(false, it))
+                        }
+                    }
+                }
             }
         }
     }

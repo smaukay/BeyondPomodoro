@@ -46,6 +46,8 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
 }
 
 fun endNotification(context: Context, notificationTitle: String, type: String) {
+    // switch off ringer
+
     val builder = NotificationCompat.Builder(context, context.getString(R.string.alert_channel_id))
         .setSmallIcon(R.drawable.app_logo)
         .setContentTitle(notificationTitle)
