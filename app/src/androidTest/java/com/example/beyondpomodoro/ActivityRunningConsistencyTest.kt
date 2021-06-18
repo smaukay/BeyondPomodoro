@@ -328,10 +328,10 @@ allOf(withId(R.id.sessionListFragment),
 childAtPosition(
 withId(R.id.sessionListConstraintLayout),
 0)))
-        recyclerView2.perform(actionOnItemAtPosition<ViewHolder>(0, ViewActionClickRecyclerViewItem()))
-        
+        recyclerView2.perform(actionOnItemAtPosition<ViewHolder>(1, ViewActionClickRecyclerViewItem()))
+
         val materialButton10 = onView(
-allOf(withId(android.R.id.button1), withText("No"),
+allOf(withText("No")
 ))
         materialButton10.perform(scrollTo(), click())
         
@@ -340,7 +340,7 @@ allOf(withId(R.id.sessionListFragment),
 childAtPosition(
 withId(R.id.sessionListConstraintLayout),
 0)))
-        recyclerView3.perform(actionOnItemAtPosition<ViewHolder>(1, ViewActionClickRecyclerViewItem()))
+        recyclerView3.perform(actionOnItemAtPosition<ViewHolder>(0, ViewActionClickRecyclerViewItem()))
         
         val textView = onView(
 allOf(withId(R.id.activityName), withText("activity 1"),

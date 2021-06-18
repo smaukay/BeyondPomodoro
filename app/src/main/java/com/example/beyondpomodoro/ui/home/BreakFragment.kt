@@ -139,7 +139,7 @@ class BreakFragment : TimerFragment() {
         }
 
         lifecycleScope.launch {
-            sessionId?.let {
+            sessionId.let {
                 sessionDao?.updateBreak(
                     Break(
                         breakTimeSeconds.toInt(),

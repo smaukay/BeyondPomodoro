@@ -6,6 +6,7 @@ import android.content.res.ColorStateList
 import android.media.AudioManager
 import android.os.Bundle
 import android.provider.CalendarContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
@@ -23,15 +24,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
 import com.example.beyondpomodoro.databinding.FragmentHomeBinding
-import com.example.beyondpomodoro.sessiontype.Dnd
-import com.example.beyondpomodoro.sessiontype.Pomodoro
-import com.example.beyondpomodoro.sessiontype.Session
-import com.example.beyondpomodoro.sessiontype.Tags
+import com.example.beyondpomodoro.sessiontype.*
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.math.floor
 
 open class HomeFragment : TimerFragment() {
 
@@ -99,7 +96,7 @@ open class HomeFragment : TimerFragment() {
             setOnCheckedChangeListener { buttonView, isChecked ->
                 // save preference to database
                 lifecycleScope.launch {
-                    sessionId?.let {
+                    sessionId.let {
                         sessionDao?.updateDnd(Dnd(isChecked, it))
                     }
                 }
@@ -115,32 +112,28 @@ open class HomeFragment : TimerFragment() {
     }
 
     override fun saveSession() {
-        val toast = Toast.makeText(
-            view?.context,
-            "Session saved",
-            Toast.LENGTH_SHORT
-        )
-        toast.show()
-
         // end time in millis
-        homeViewModel.sessionEndTimeMillis = Calendar.getInstance().timeInMillis
+        val sessionEndTimeMillis = Calendar.getInstance().timeInMillis
+        Log.d("HomeFragment", "session end time: $sessionEndTimeMillis")
 
         // create a calendar event description from tags added
         var descriptionSuggestion = tags.reduceOrNull { acc, c -> "$acc, $c" }
         if (descriptionSuggestion.isNullOrBlank()) {
             descriptionSuggestion = ""
         }
-        // create calendar intent
-        val intent = Intent(Intent.ACTION_INSERT)
-            .setData(CalendarContract.Events.CONTENT_URI)
-            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, homeViewModel.sessionStartTimeMillis)
-            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, homeViewModel.sessionEndTimeMillis)
-            .putExtra(CalendarContract.Events.TITLE, title)
-            .putExtra(CalendarContract.Events.DESCRIPTION, descriptionSuggestion)
-            // .putExtra(CalendarContract.Events.EVENT_LOCATION, "The gym")
-            // .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
-            // .putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com")
-        waitForCalendar.launch(intent)
+
+        lifecycleScope.launch {
+            val sessionStartTimeMillis = sessionDao?.getSession(sessionId)?.usedAt
+            Log.d("HomeFragment", "session start time: $sessionStartTimeMillis")
+            // create calendar intent
+            val intent = Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, sessionStartTimeMillis)
+                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, sessionEndTimeMillis)
+                .putExtra(CalendarContract.Events.TITLE, title)
+                .putExtra(CalendarContract.Events.DESCRIPTION, descriptionSuggestion)
+            waitForCalendar.launch(intent)
+        }
     }
 
     override fun endSession() {
@@ -340,51 +333,26 @@ open class HomeFragment : TimerFragment() {
             return
         }
 
-
-
         lifecycleScope.launch {
             dnd?.let { dnd ->
-                sessionId?.let {
-                    sessionDao?.updatePomodoro(
-                        Pomodoro(
-                            sessionTimeSeconds.toInt(),
-                            System.currentTimeMillis(),
-                            tags.toSet(),
-                            dnd,
-                            it
-                        )
+                sessionDao?.updatePomodoro(
+                    Pomodoro(
+                        sessionTimeSeconds.toInt(),
+                        tags.toSet(),
+                        dnd,
+                        sessionId
                     )
-                }?: run {
-                    // add a new session to database
-
-                    sessionId = sessionDao?.addSession(
-                        Session(homeViewModel.title,
-                            sessionTimeSeconds.toInt(),
-                            300,
-                            System.currentTimeMillis(),
-                            tags.toSet(),
-                            dnd
-                        )
-                    )?.toInt()
-                }
+                )
             }
-
-
-
         }
     }
 
-    override fun updateVisualBlocks(secondsUntilFinished: UInt) {
-        super.updateVisualBlocks(secondsUntilFinished)
-
+    override fun updateVisualBlocks(numBlocks: UInt) {
+        super.updateVisualBlocks(numBlocks)
 
         // check if any visualblocks to be disappeared?
-
         homeViewModel.numBlocksShow.apply {
-            val res = this
-            timer.sessionTimeSeconds.value?.toDouble()?.let {
-                res.value = floor((secondsUntilFinished.toDouble()/it) * 9f).toUInt()
-            }
+            value = numBlocks
         }
     }
 
@@ -397,7 +365,14 @@ open class HomeFragment : TimerFragment() {
 
     override fun startSession() {
         super.startSession()
-        homeViewModel.sessionStartTimeMillis = Calendar.getInstance().timeInMillis
+        lifecycleScope.launch {
+            sessionDao?.activateSession(
+                UseTime(
+                    Calendar.getInstance().timeInMillis,
+                    sessionId
+                )
+            )
+        }
     }
 
     override fun onTimerFinish() {
@@ -427,6 +402,7 @@ open class HomeFragment : TimerFragment() {
 
     override fun confirmEndSession() {
         // Confirm if session to be saved?
+        Log.d("HomeFragment", "Confirm end of session")
         EndSessionDialogFragment(this).show(parentFragmentManager, "end_session")
     }
 }

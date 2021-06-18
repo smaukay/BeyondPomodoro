@@ -32,9 +32,13 @@ data class Title (
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
 )
 
+data class UseTime (
+    @ColumnInfo(name = "used_at") var usedAt: Long?,
+    @PrimaryKey(autoGenerate = true) val sid: Int = 0
+)
+
 data class Pomodoro (
     @ColumnInfo(name = "session_time") var sessionTime: Int?,
-    @ColumnInfo(name = "used_at") var usedAt: Long?,
     @ColumnInfo(name = "tags") var tags: Set<String>?,
     @ColumnInfo(name = "dnd") var dnd: Boolean = false,
     @PrimaryKey(autoGenerate = true) val sid: Int = 0
@@ -96,6 +100,9 @@ interface TagsDao {
 interface SessionDao {
     @Query("SELECT * FROM session WHERE used_at = (select MAX(s.used_at) from session as s)")
     suspend fun getLatestSession(): Session
+
+    @Update(entity = Session::class)
+    suspend fun activateSession(t: UseTime)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addSession(session: Session): Long

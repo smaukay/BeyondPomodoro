@@ -28,6 +28,7 @@ import com.example.beyondpomodoro.sessiontype.SessionDao
 import com.example.beyondpomodoro.sessiontype.TagsDao
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlin.properties.Delegates
 
 
 open class TimerFragment : Fragment() {
@@ -35,7 +36,7 @@ open class TimerFragment : Fragment() {
     protected var tags: MutableList<String> = mutableListOf()
     protected var breakTimeSeconds: UInt = 5u * 60u
     protected var sessionTimeSeconds: UInt = 25u * 60u
-    protected var sessionId: Int? = null
+    protected var sessionId by Delegates.notNull<Int>()
     protected var title: String? = null
 
     lateinit var startButton: Button
@@ -71,6 +72,9 @@ open class TimerFragment : Fragment() {
             })
             timer.state.observe(viewLifecycleOwner, {
                 changeState(it)
+            })
+            timer.percentage.observe(viewLifecycleOwner, {
+                updateVisualBlocks(it)
             })
         }
 
@@ -117,17 +121,14 @@ open class TimerFragment : Fragment() {
             }?: run {
                 sessionDao?.getLatestSession()?.apply {
                     readSession(this)
-                    sessionId?.let { setRunningActivityId(activity, it) }
+                    sessionId.let { setRunningActivityId(activity, it) }
                 }
             }
-
-
-
 
             addButtons()
             bindCallbacks()
             lifecycleScope.launch {
-                sessionId?.let {
+                sessionId.let {
                     sessionDao?.getTitle(it)?.let { s ->
                         s.collect { t ->
                             title = t
@@ -137,7 +138,7 @@ open class TimerFragment : Fragment() {
                 }
             }
             lifecycleScope.launch {
-                sessionId?.let {
+                sessionId.let {
                     sessionDao?.getDnd(it)?.let { s ->
                         s.collect { d ->
                             dnd = d
@@ -359,12 +360,9 @@ open class TimerFragment : Fragment() {
     open fun onTick(secondsLeft: UInt) {
 
         textViewSeconds.text = convertMinutesToDisplayString(secondsLeft)
-
-        // update visuals
-        updateVisualBlocks(secondsLeft)
     }
 
-    open fun updateVisualBlocks(secondsUntilFinished: UInt) {
+    open fun updateVisualBlocks(numBlocks: UInt) {
     }
 
     fun timerReset() {

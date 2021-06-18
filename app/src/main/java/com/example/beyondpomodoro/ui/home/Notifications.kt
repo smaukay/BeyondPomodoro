@@ -27,17 +27,7 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
         .setOnlyAlertOnce(true)
         .setContentIntent(
             // Create the TaskStackBuilder
-            NavDeepLinkBuilder(context)
-            .setComponentName(MainActivity::class.java)
-            .setGraph(R.navigation.mobile_navigation)
-            .setDestination(
-                when(type) {
-                    "Pomodoro" -> R.id.pomodoroFragment
-                    "Break" -> R.id.breakFragment
-                    else -> R.id.sessionInfoFragment
-                }
-            )
-            .createPendingIntent()
+            openApp(context, type)
         )
         .addAction(R.drawable.ic_menu_send,
             action,
