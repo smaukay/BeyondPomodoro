@@ -2,6 +2,7 @@ package com.example.beyondpomodoro.ui.home
 
 import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
+import kotlin.math.floor
 
 
 enum class State {
@@ -25,6 +26,9 @@ enum class State {
 }
 
 class PomodoroTimer(sessionTimeSeconds: UInt) {
+    val percentage: MutableLiveData<UInt> by lazy {
+        MutableLiveData<UInt>(9u)
+    }
     val state: MutableLiveData<State> by lazy {
         MutableLiveData<State>(State.INACTIVE)
     }
@@ -75,10 +79,21 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
         }
     }
 
+    private fun updatePercentage() {
+        percentage.apply {
+            value = sessionTimeSeconds.value?.toDouble()?.let {
+                (sessionTimeSecondsLeft.value?.times(9u))?.toDouble()?.div(it)
+                    ?.let { floor(it).toUInt() }
+            }
+        }
+    }
+
     private fun updateVisualBlocks(millisUntilFinished: Long) {
         sessionTimeSecondsLeft.apply {
             value = (millisUntilFinished.toUInt())/1000u
         }
+
+        updatePercentage()
     }
 
     fun setSessionTime(s: UInt) {
@@ -86,6 +101,12 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
         sessionTimeSeconds.apply {
             value = s
         }
+
+        sessionTimeSecondsLeft.apply {
+            value = s
+        }
+
+        updatePercentage()
     }
 
     private fun onTimerFinish() {
@@ -105,6 +126,6 @@ class PomodoroTimer(sessionTimeSeconds: UInt) {
                 onTimerFinish()
             }
         }
+        updatePercentage()
     }
-
 }

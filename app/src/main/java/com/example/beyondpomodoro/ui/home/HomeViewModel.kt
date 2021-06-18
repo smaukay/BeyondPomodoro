@@ -20,7 +20,6 @@ open class HomeViewModel : ViewModel() {
     var tags: MutableMap<String, String> = mutableMapOf()
 
     // event variables
-    var sessionStartTimeMillis: Long? = null
     var sessionEndTimeMillis: Long? = null
 
 

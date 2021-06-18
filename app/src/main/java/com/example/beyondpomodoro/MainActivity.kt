@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -28,13 +29,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        println("DEBUG: destorying activity")
+        Log.d(localClassName, "DEBUG: destorying activity")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        println("DEBUG: Creating activity")
+        Log.d(localClassName, "DEBUG: Creating activity")
         db = SessionDatabase.getInstance(this)
 
         // create timer service
