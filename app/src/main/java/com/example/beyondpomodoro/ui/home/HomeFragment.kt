@@ -32,10 +32,10 @@ import java.util.*
 
 open class HomeFragment : TimerFragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
     private var _binding: FragmentHomeBinding? = null
     protected lateinit var waitForCalendar: ActivityResultLauncher<Intent>
 
+    var imageButtonList: List<ImageView?>? = null
     var editTitle: EditText? = null
     var editTags: EditText? = null
     var chipGroup: FlexboxLayout? = null
@@ -192,8 +192,6 @@ open class HomeFragment : TimerFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -209,23 +207,21 @@ open class HomeFragment : TimerFragment() {
         }
     }
 
+    fun updateBlocksDisplay(numBlocks: UInt) {
+        // number of blocks to show changed
+        imageButtonList?.let { it ->
+            it.subList(0, numBlocks.toInt()).forEach {
+                it?.visibility = VISIBLE
+            }
+            it.subList(numBlocks.toInt(), 9).forEach {
+                it?.visibility = INVISIBLE
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel.numBlocksShow.observe(viewLifecycleOwner, Observer<UInt> {numBlocks ->
-
-            // number of blocks to show changed
-            homeViewModel.imageButtonList?.let { it ->
-                it.subList(0, numBlocks.toInt()).forEach {
-                    it?.visibility = VISIBLE
-                }
-                it.subList(numBlocks.toInt(), 9).forEach {
-                    it?.visibility = INVISIBLE
-                }
-            }
-        })
-
         editTitle = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
-            setText("")
             doOnTextChanged { text, start, before, count ->
                 title = text.toString()
             }
@@ -333,14 +329,14 @@ open class HomeFragment : TimerFragment() {
             R.id.imageButton9,
         )
 
-        homeViewModel.imageButtonList = imageButtonIds.map {
+        imageButtonList = imageButtonIds.map {
             view.findViewById(it)
         }
     }
 
     private fun showAllVisualBlocks() {
         // when user ends session, set all visual blocks back to active
-        homeViewModel.imageButtonList?.forEach {
+        imageButtonList?.forEach {
             it?.visibility = VISIBLE
         }
     }
@@ -374,18 +370,13 @@ open class HomeFragment : TimerFragment() {
 
     override fun updateVisualBlocks(numBlocks: UInt) {
         super.updateVisualBlocks(numBlocks)
-
-        // check if any visualblocks to be disappeared?
-        homeViewModel.numBlocksShow.apply {
-            value = numBlocks
-        }
+        updateBlocksDisplay(numBlocks)
     }
 
     private fun hideAllVisualBlocks() {
-        homeViewModel.imageButtonList?.forEach {
+        imageButtonList?.forEach {
             it?.visibility = INVISIBLE
         }
-
     }
 
     override fun startSession() {
