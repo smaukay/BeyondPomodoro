@@ -24,3 +24,18 @@ fun setRunningActivityId(activity: FragmentActivity?, id: Int) {
         }
     }
 }
+
+fun saveSessionNotes(activity: FragmentActivity?, notes: String) {
+    activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+        it.edit().apply() {
+            putString("notes", notes)
+            commit()
+        }
+    }
+}
+
+fun readSessionNotes(activity: FragmentActivity?): String? {
+    return activity?.getPreferences(Context.MODE_PRIVATE)?.let {
+        it.getString("notes", "")
+    }
+}
