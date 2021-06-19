@@ -48,4 +48,5 @@
     <string name="cancel_activity_yes">Yes, cancel running activity</string>
     <string name="pomodoro_discard_session">Discard session</string>
     <string name="notification_break_message">Break time. Stretch. Relax. Hydrate.</string>
+    <string name="app_description">Ready for some pomodoro?</string>
 </resources>

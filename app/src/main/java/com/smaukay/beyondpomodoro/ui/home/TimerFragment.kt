@@ -1,11 +1,6 @@
 package com.smaukay.beyondpomodoro.ui.home
 
-import android.app.NotificationManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -168,17 +163,6 @@ open class TimerFragment : Fragment() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    open fun hasDndPermissions(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager =
-                activity?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            return notificationManager.isNotificationPolicyAccessGranted
-        } else {
-            return true
-        }
-    }
-
     open fun getDndPermissions(ifAllowed: (Intent) -> Unit) {
         // set DND on
         // Ask the user to grant access
@@ -332,7 +316,7 @@ open class TimerFragment : Fragment() {
         super.onCreate(savedInstanceState)
         dndCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
             Log.d("TimerFragment", "time to set dnd")
-            when(hasDndPermissions()) {
+            when(hasDndPermissions((this as ContextWrapper))) {
                 true -> {
                     // call dnd now
                     _doNotDisturb()
@@ -350,7 +334,7 @@ open class TimerFragment : Fragment() {
         }
         ringerCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
             Log.d("TimerFragment", "time to set ringer on")
-            when(hasDndPermissions()) {
+            when(hasDndPermissions((this as ContextWrapper))) {
                 true -> {
                     // set ringer normal
                     _setRingerNormal()
