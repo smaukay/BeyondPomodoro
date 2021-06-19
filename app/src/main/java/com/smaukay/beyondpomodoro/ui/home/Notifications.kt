@@ -1,7 +1,9 @@
 package com.smaukay.beyondpomodoro.ui.home
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,7 +13,7 @@ import androidx.navigation.NavDeepLinkBuilder
 import com.smaukay.beyondpomodoro.MainActivity
 import com.smaukay.beyondpomodoro.R
 
-fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, notificationTitle: String, type: String, state: State) {
+fun persistentNotification(context: Context, secondsUntilFinished: UInt, notificationTitle: String, type: String, state: State): Notification {
     val action = when(state) {
         State.ACTIVE_RUNNING -> "Pause"
         State.ACTIVE_PAUSED -> "Resume"
@@ -41,13 +43,28 @@ fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, no
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
 
-        notify(0, builder.build())
+        return builder.build()
+    }
+}
+
+fun persistentTimedNotification(context: Context, secondsUntilFinished: UInt, notificationTitle: String, type: String, state: State) {
+    // create timer service
+    with(NotificationManagerCompat.from(context)) {
+        val notification = persistentNotification(
+            context,
+            secondsUntilFinished,
+            notificationTitle,
+            type,
+            state
+        )
+        notify(1, notification)
     }
 }
 
 fun endNotification(context: Context, notificationTitle: String, type: String) {
     // switch off ringer
 
+    (context as Service).stopForeground(true)
     val builder = NotificationCompat.Builder(context, context.getString(R.string.alert_channel_id))
         .setSmallIcon(R.drawable.app_logo)
         .setContentTitle(notificationTitle)
@@ -59,7 +76,7 @@ fun endNotification(context: Context, notificationTitle: String, type: String) {
     with(NotificationManagerCompat.from(context)) {
         // notificationId is a unique int for each notification that you must define
 
-        notify( 0, builder.build())
+        notify( 1, builder.build())
     }
 }
 

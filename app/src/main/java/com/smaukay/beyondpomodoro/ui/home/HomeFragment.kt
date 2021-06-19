@@ -1,5 +1,6 @@
 package com.smaukay.beyondpomodoro.ui.home
 
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
@@ -21,11 +22,11 @@ import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.material.chip.Chip
 import com.smaukay.beyondpomodoro.R
 import com.smaukay.beyondpomodoro.databinding.FragmentHomeBinding
 import com.smaukay.beyondpomodoro.sessiontype.*
-import com.google.android.flexbox.FlexboxLayout
-import com.google.android.material.chip.Chip
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -56,7 +57,7 @@ open class HomeFragment : TimerFragment() {
 
         when(dnd) {
             true -> {
-                if(hasDndPermissions()) {
+                if(hasDndPermissions((this as ContextWrapper))) {
                     _setRingerNormal()
                 } else {
                     getDndPermissions {
@@ -91,7 +92,7 @@ open class HomeFragment : TimerFragment() {
         when(dnd) {
             true -> {
                 Log.d("TimerFragment", "dnd set is requested by user")
-                if (hasDndPermissions()) {
+                if (hasDndPermissions((this as ContextWrapper))) {
                     _doNotDisturb()
                 }
                 else {
