@@ -3,7 +3,6 @@ package com.smaukay.beyondpomodoro.ui.home
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
-import android.content.ContextWrapper
 import android.media.AudioManager
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -17,10 +16,10 @@ fun setDoNotDisturb(service: Service) {
 }
 
 @RequiresApi(Build.VERSION_CODES.M)
-fun hasDndPermissions(s: ContextWrapper): Boolean {
+fun hasDndPermissions(getSystemService: (String) -> Any): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val notificationManager =
-            s.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         return notificationManager.isNotificationPolicyAccessGranted
     } else {
         return true

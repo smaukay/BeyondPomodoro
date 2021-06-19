@@ -1,7 +1,6 @@
 package com.smaukay.beyondpomodoro.ui.home
 
 import android.content.BroadcastReceiver
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Binder
@@ -56,7 +55,9 @@ class TimerService : LifecycleService() {
                         cancelAll()
                     }
                     stopForeground()
-                    if(hasDndPermissions(this as ContextWrapper)){
+                    if(hasDndPermissions {
+                            getSystemService(it)
+                        }) {
                         setRingerNormal(this)
                     }
                     else {

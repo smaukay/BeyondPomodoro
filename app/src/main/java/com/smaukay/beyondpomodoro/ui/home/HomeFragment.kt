@@ -1,6 +1,5 @@
 package com.smaukay.beyondpomodoro.ui.home
 
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Build
@@ -57,7 +56,9 @@ open class HomeFragment : TimerFragment() {
 
         when(dnd) {
             true -> {
-                if(hasDndPermissions((this as ContextWrapper))) {
+                if(hasDndPermissions({
+                        requireActivity().getSystemService(it)
+                    })) {
                     _setRingerNormal()
                 } else {
                     getDndPermissions {
@@ -92,7 +93,9 @@ open class HomeFragment : TimerFragment() {
         when(dnd) {
             true -> {
                 Log.d("TimerFragment", "dnd set is requested by user")
-                if (hasDndPermissions((this as ContextWrapper))) {
+                if (hasDndPermissions({
+                        requireActivity().getSystemService(it)
+                    })) {
                     _doNotDisturb()
                 }
                 else {

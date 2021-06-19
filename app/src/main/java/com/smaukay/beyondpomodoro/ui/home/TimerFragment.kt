@@ -1,6 +1,9 @@
 package com.smaukay.beyondpomodoro.ui.home
 
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -316,7 +319,9 @@ open class TimerFragment : Fragment() {
         super.onCreate(savedInstanceState)
         dndCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
             Log.d("TimerFragment", "time to set dnd")
-            when(hasDndPermissions((this as ContextWrapper))) {
+            when(hasDndPermissions({
+                requireActivity().getSystemService(it)
+            })) {
                 true -> {
                     // call dnd now
                     _doNotDisturb()
@@ -334,7 +339,9 @@ open class TimerFragment : Fragment() {
         }
         ringerCheck = registerForActivityResult((ActivityResultContracts.StartActivityForResult())) {
             Log.d("TimerFragment", "time to set ringer on")
-            when(hasDndPermissions((this as ContextWrapper))) {
+            when(hasDndPermissions({
+                requireActivity().getSystemService(it)
+            })) {
                 true -> {
                     // set ringer normal
                     _setRingerNormal()
