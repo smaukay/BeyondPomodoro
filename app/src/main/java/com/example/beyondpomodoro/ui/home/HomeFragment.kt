@@ -18,8 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.beyondpomodoro.R
@@ -36,9 +35,14 @@ open class HomeFragment : TimerFragment() {
     protected lateinit var waitForCalendar: ActivityResultLauncher<Intent>
 
     var imageButtonList: List<ImageView?>? = null
-    var editTitle: EditText? = null
+    var editNotes: EditText? = null
     var editTags: EditText? = null
     var chipGroup: FlexboxLayout? = null
+
+    val notes: MutableLiveData<String> by lazy {
+        MutableLiveData<String>("")
+    }
+
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -169,7 +173,7 @@ open class HomeFragment : TimerFragment() {
         showAllVisualBlocks()
 
         // clear title field
-        editTitle?.setText("")
+        notes.value = ""
         super.setSessionTime(breakTimeSeconds)
         timerReset()
         findNavController().navigate(R.id.action_nav_pomodoro_to_breakFragment)
@@ -221,9 +225,21 @@ open class HomeFragment : TimerFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        editTitle = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
+        readSessionNotes(activity)?.let {
+            notes.value = it
+        }
+        notes.observe(viewLifecycleOwner, {
+            if(it != editNotes?.text.toString()) {
+                editNotes?.setText(it)
+            }
+
+            saveSessionNotes(activity, it)
+        })
+        editNotes = view.findViewById<EditText>(R.id.editTextTitle)?.apply {
             doOnTextChanged { text, start, before, count ->
-                title = text.toString()
+                if (notes.value != text.toString()) {
+                    notes.value = text.toString()
+                }
             }
         }
 
