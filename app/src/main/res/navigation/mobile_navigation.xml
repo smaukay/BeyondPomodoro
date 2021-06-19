@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/pomodoroFragment"
-        android:name="com.example.beyondpomodoro.ui.home.HomeFragment"
+        android:name="com.smaukay.beyondpomodoro.ui.home.HomeFragment"
         android:label="Session"
         tools:layout="@layout/fragment_home">
         <action
@@ -16,17 +16,17 @@
     </fragment>
     <fragment
         android:id="@+id/breakFragment"
-        android:name="com.example.beyondpomodoro.ui.home.BreakFragment"
+        android:name="com.smaukay.beyondpomodoro.ui.home.BreakFragment"
         android:label="Break"
         tools:layout="@layout/break_fragment" />
     <fragment
         android:id="@+id/aboutFragment"
-        android:name="com.example.beyondpomodoro.ui.home.AboutFragment"
+        android:name="com.smaukay.beyondpomodoro.ui.home.AboutFragment"
         android:label="About this app"
         tools:layout="@layout/fragment_about" />
     <fragment
         android:id="@+id/sessionInfoFragment"
-        android:name="com.example.beyondpomodoro.SessionInfoFragment"
+        android:name="com.smaukay.beyondpomodoro.SessionInfoFragment"
         android:label="Activities"
         tools:layout="@layout/fragment_session_info_list">
         <action
