@@ -17,14 +17,12 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.beyondpomodoro.databinding.ActivityMainBinding
 import com.example.beyondpomodoro.sessiontype.SessionDatabase
 import com.example.beyondpomodoro.ui.home.TimerService
-import com.example.beyondpomodoro.ui.home.TimerViewModel
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    protected lateinit var timerViewModel: TimerViewModel
     lateinit var db: SessionDatabase
 
     override fun onDestroy() {
