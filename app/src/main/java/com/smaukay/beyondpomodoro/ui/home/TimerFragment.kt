@@ -70,19 +70,20 @@ open class TimerFragment : Fragment() {
 
         fun bindCallbacks() {
             timer.sessionTimeSecondsLeft.observe(viewLifecycleOwner, { millisUntilFinished ->
+                Log.d("TimerFragment", "onTick: $millisUntilFinished")
                 onTick(millisUntilFinished.toUInt())
             })
             timer.state.observe(viewLifecycleOwner, {
+                Log.d("TimerFragment", "state: $it")
                 changeState(it)
             })
             timer.percentage.observe(viewLifecycleOwner, {
+                Log.d("TimerFragment", "percentage: $it")
                 updateVisualBlocks(it)
             })
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            timer.sessionTimeSecondsLeft.removeObservers(viewLifecycleOwner)
-            timer.state.removeObservers(viewLifecycleOwner)
 
         }
     }

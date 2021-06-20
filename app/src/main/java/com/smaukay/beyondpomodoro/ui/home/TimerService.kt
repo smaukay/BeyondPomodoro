@@ -33,6 +33,7 @@ class TimerService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
 
+        Log.d("TimerService", "creating service")
         receiver = TimerActions().apply {
             timer = _timer
         }
@@ -45,6 +46,7 @@ class TimerService : LifecycleService() {
         _timer.sessionTimeSeconds.observe(this, Observer<UInt> {
         })
         _timer.sessionTimeSecondsLeft.observe(this, Observer<UInt>{
+            Log.d("TimerService", "sending tick: $it as timer value is ${_timer.sessionTimeSecondsLeft.value}")
             onTick(it)
         })
         _timer.state.observe(this, Observer<State> {
@@ -124,11 +126,6 @@ class TimerService : LifecycleService() {
     override fun onUnbind(intent: Intent?): Boolean {
 
         return super.onUnbind(intent)
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {

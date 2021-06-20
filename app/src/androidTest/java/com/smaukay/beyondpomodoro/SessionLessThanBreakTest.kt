@@ -39,7 +39,7 @@ isDisplayed()))
         floatingActionButton.perform(click())
         
         val materialTextView = onView(
-allOf(withId(R.id.textView2), withText("25:00"),
+allOf(withId(R.id.textView2),
 childAtPosition(
 allOf(withId(R.id.home_layout),
 childAtPosition(
