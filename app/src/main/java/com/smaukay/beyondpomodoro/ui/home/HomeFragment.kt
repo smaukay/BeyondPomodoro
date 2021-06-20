@@ -111,7 +111,6 @@ open class HomeFragment : TimerFragment() {
     @RequiresApi(Build.VERSION_CODES.M)
     override fun addButtons() {
         super.addButtons()
-        setSessionTime(sessionTimeSeconds)
         notificationTitle("Session running")
         type("Pomodoro")
         populateTags()
