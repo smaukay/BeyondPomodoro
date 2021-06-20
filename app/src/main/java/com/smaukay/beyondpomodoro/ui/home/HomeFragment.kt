@@ -161,7 +161,7 @@ open class HomeFragment : TimerFragment() {
                 .setData(CalendarContract.Events.CONTENT_URI)
                 .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, sessionStartTimeMillis)
                 .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, sessionEndTimeMillis)
-                .putExtra(CalendarContract.Events.TITLE, title)
+                .putExtra(CalendarContract.Events.TITLE, notes.value)
                 .putExtra(CalendarContract.Events.DESCRIPTION, descriptionSuggestion)
             waitForCalendar.launch(intent)
         }
